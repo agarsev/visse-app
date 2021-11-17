@@ -1,19 +1,28 @@
 # 2021-11-10 Antonio F. G. Sevilla <afgs@ucm.es>
 # Licensed under the Open Software License version 3.0
 
-# Backend server for the VisSE project. Receives an image, and returns the
-# recognised SignWriting data contained in it, with textual descriptions of the
-# different graphemes.
+# Backend server for the VisSE project: https://www.ucm.es/visse
+# Receives an image, and returns the recognised SignWriting data contained in
+# it, with textual descriptions of the different graphemes.
 
 from io import BytesIO
 from fastapi import FastAPI, File
+from fastapi.middleware.cors import CORSMiddleware
+from pathlib import Path
 from pydantic import BaseModel
 from quevedo import Dataset, Logogram
 
-CORPUS_PATH = 'corpus'
+CORPUS_PATH = Path(__file__).parent.parent / 'corpus'
 PIPELINE = 'p_full'
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*'],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 ds = Dataset(CORPUS_PATH)
 pipeline = ds.get_pipeline(PIPELINE)
