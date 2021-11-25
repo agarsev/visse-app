@@ -1,0 +1,12 @@
+* NEXT
+
+First make it work in general.
+
+** TODO Loading indicator
+
+When choosing an image, while waiting for the backend.
+
+** TODO Error management
+
+- [ ] Backend
+- [ ] Image reading

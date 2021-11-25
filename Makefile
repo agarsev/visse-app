@@ -31,7 +31,10 @@ clean:
 	rm -rf $(OUT)
 
 serve:
-	live-server --no-css-inject --wait=200 $(OUT)
+	@live-server --cors --no-css-inject --wait=200 $(OUT) &
+	cd ../backend ; poetry run uvicorn main:app --reload &
+	wait
+
 
 .ONESHELL:
 
