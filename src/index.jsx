@@ -51,6 +51,7 @@ export default function App() {
     }
 
     return <>
+        <Header />
         <SignWindow image={state.image} />
         <ToolBar />
         <Explanation graphemes={state.graphemes} currentGrapheme={state.currentGrapheme}
@@ -59,19 +60,36 @@ export default function App() {
     </>;
 }
 
+function Header () {
+    return <header class="py-2 mx-4 border-b-2 border-gray-400 flex">
+        <img src="img/logo_visse_color.svg" 
+             class="h-28 ml-auto"
+             alt="Logo del proyecto VisSE"
+             title="Visualizando la SignoEscritura" />
+    </header>;
+}
+
 function SignWindow ({ image }) {
-    return <div id="signwindow">
-        <img src={image} />
+    return <div style="grid-area: signwindow;"
+        class="p-2 flex">
+        <img src={image} class="m-auto" />
     </div>
 }
 
 function ToolBar () {
-    return <nav></nav>;
+    return <nav style="grid-area: toolbar;">
+    </nav>;
 }
 
 function Explanation ({ graphemes, currentGrapheme, dispatch }) {
 
     const scroller = useRef(null);
+    const can_left = currentGrapheme > 0;
+    const can_right = currentGrapheme < graphemes.length - 1;
+
+    const bt = "w-6 h-20 rounded-full p-1 m-1";
+    const bt_ok = bt+" bg-gray-400 text-white";
+    const bt_no = bt+" bg-gray-200 text-white cursor-default";
 
     function updateCurrentGrapheme (e) {
         dispatch({ action: 'set_current_grapheme',
@@ -100,32 +118,39 @@ function Explanation ({ graphemes, currentGrapheme, dispatch }) {
         });
     }, [currentGrapheme]);
 
-    return <div class="flex">
-        <button disabled={currentGrapheme === 0} onClick={scrollleft}>
-            <svg width="24" height="24" viewBox="0 0 24 24">
-                <path d="M15.41 16.09l-4.58-4.59 4.58-4.59L14 5.5l-6 6 6 6z" />
-                <path d="M0-.5h24v24H0z" fill="none" />
+    return <div style="grid-area: explanation;" class="flex">
+        <button onClick={scrollleft} class={can_left?bt_ok:bt_no} >
+            <svg width="100%" height="100%" viewBox="4 0 16 24">
+                <path d="M15.41 16.09l-4.58-4.59 4.58-4.59L14 5.5l-6 6 6 6z"
+                    fill="currentColor" />
             </svg>
         </button>
         <div ref={scroller} onScroll={onscroll}
             class="whitespace-nowrap overflow-x-scroll flex-1"
             style="scroll-snap-type: x mandatory;">
-            {graphemes.map(g => <div class="w-full inline-block rounded border p-4"
-                style="scroll-snap-align: center;">
-                    {g.description}
-                </div>)}
+            {graphemes.map(g => <GraphemeDescription grapheme={g} />)}
         </div>
-        <button disabled={currentGrapheme === graphemes.length - 1} onClick={scrollright}>
-            <svg width="24" height="24" viewBox="0 0 24 24">
-                <path d="M8.59 16.34l4.58-4.59-4.58-4.59L10 5.75l6 6-6 6z" />
-                <path d="M0-.25h24v24H0z" fill="none" />
+        <button onClick={scrollright} class={can_right?bt_ok:bt_no} >
+            <svg width="100%" height="100%" viewBox="4 0 16 24">
+                <path d="M8.59 16.34l4.58-4.59-4.58-4.59L10 5.75l6 6-6 6z"
+                    fill="currentColor" />
             </svg>
         </button>
     </div>;
 }
 
+function GraphemeDescription ({ grapheme }) {
+    const { description } = grapheme;
+    return <div class="w-full inline-block p-4"
+        style="scroll-snap-align: center;">
+        {description}
+    </div>
+}
+
+
 function FileBar ({ choose }) {
-    return <div id="filebar">
+    return <div style="grid-area: filebar;"
+        class="flex p-2 justify-center items-center">
         <UploadButton choose={choose} />
     </div>;
 }
@@ -135,11 +160,13 @@ function UploadButton ({ choose }) {
     return <>
         <input class="hidden" type="file" ref={input}
             onChange={() => choose(input.current.files[0]) } />
-        <button onClick={() => input.current.click()}>
-            Upload
+        <button class="rounded-full bg-green-600 w-20 h-20 p-3 text-white" onClick={() => input.current.click()}>
+            <svg width="100%" height="100%" viewBox="0 0 24 24">
+                <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" fill="currentColor" />
+            </svg>
         </button>
     </>;
 }
 
 
-render(<App />, document.getElementById('app'));
+render(<App />, document.body);

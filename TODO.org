@@ -10,3 +10,5 @@ When choosing an image, while waiting for the backend.
 
 - [ ] Backend
 - [ ] Image reading
+
+** TODO Prerender
