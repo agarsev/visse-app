@@ -2,6 +2,8 @@
 
 First make it work in general.
 
+** TODO Sort graphemes geographically
+
 ** TODO Loading indicator
 
 When choosing an image, while waiting for the backend.

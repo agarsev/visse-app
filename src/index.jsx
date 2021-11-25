@@ -52,7 +52,8 @@ export default function App() {
 
     return <>
         <Header />
-        <SignWindow image={state.image} />
+        <SignWindow image={state.image} size={state.size}
+            grapheme={state.graphemes?.[state.currentGrapheme]} />
         <ToolBar />
         <Explanation graphemes={state.graphemes} currentGrapheme={state.currentGrapheme}
             dispatch={dispatch} />
@@ -69,11 +70,28 @@ function Header () {
     </header>;
 }
 
-function SignWindow ({ image }) {
-    return <div style="grid-area: signwindow;"
-        class="p-2 flex">
-        <img src={image} class="m-auto" />
-    </div>
+function SignWindow ({ image, size, grapheme }) {
+    const { left, top, width, height } = grapheme ?? {};
+    const radius = 1.2 * (Math.max(width, height) / 2);
+    return <div style="grid-area: signwindow;" class="flex">
+        <div class="inline-block m-auto relative">
+            <img src={image} />
+            {grapheme && <div class="absolute w-full h-full top-0 left-0">
+                <svg width="100%" height="100%" viewBox={`0 0 ${size[0]} ${size[1]}`}>
+                    <filter id="blur">
+                        <feGaussianBlur stdDeviation="4" />
+                    </filter>
+                    <mask id="mask" x="0" y="0" width="100%" height="100%">
+                        <rect x="0" y="0" width="100%" height="100%" fill="white" />
+                        <circle cx={left + width/2} cy={top + height/2} r={radius}
+                            fill="black" filter="url(#blur)" />
+                    </mask>
+                    <rect x="0" y="0" width="100%" height="100%" mask="url(#mask)"
+                        fill="black" fill-opacity="0.2" />
+                </svg>
+            </div>}
+        </div>
+    </div>;
 }
 
 function ToolBar () {
