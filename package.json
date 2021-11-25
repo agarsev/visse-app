@@ -1,0 +1,8 @@
+{
+  "type": "module",
+  "dependencies": {
+    "esbuild": "^0.13.15",
+    "preact": "^10.6.1",
+    "tailwindcss": "^2.2.19"
+  }
+}
