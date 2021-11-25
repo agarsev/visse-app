@@ -52,8 +52,7 @@ export default function App() {
 
     return <>
         <Header />
-        <SignWindow image={state.image} size={state.size}
-            grapheme={state.graphemes?.[state.currentGrapheme]} />
+        <SignWindow dispatch={dispatch} {...state} />
         <ToolBar />
         <Explanation graphemes={state.graphemes} currentGrapheme={state.currentGrapheme}
             dispatch={dispatch} />
@@ -70,26 +69,35 @@ function Header () {
     </header>;
 }
 
-function SignWindow ({ image, size, grapheme }) {
-    const { left, top, width, height } = grapheme ?? {};
-    const radius = 1.2 * (Math.max(width, height) / 2);
+function SignWindow ({ image, size, graphemes, currentGrapheme, dispatch }) {
+    const { left, top, width, height } = currentGrapheme != null ?
+        graphemes[currentGrapheme] : {};
     return <div style="grid-area: signwindow;" class="flex">
         <div class="inline-block m-auto relative">
             <img src={image} />
-            {grapheme && <div class="absolute w-full h-full top-0 left-0">
+            <div class="absolute w-full h-full top-0 left-0">
                 <svg width="100%" height="100%" viewBox={`0 0 ${size[0]} ${size[1]}`}>
                     <filter id="blur">
                         <feGaussianBlur stdDeviation="4" />
                     </filter>
+                {currentGrapheme != null ? <>
                     <mask id="mask" x="0" y="0" width="100%" height="100%">
                         <rect x="0" y="0" width="100%" height="100%" fill="white" />
-                        <circle cx={left + width/2} cy={top + height/2} r={radius}
+                        <circle cx={left + width/2} cy={top + height/2}
+                            r={1.2 * Math.max(width, height) / 2}
                             fill="black" filter="url(#blur)" />
                     </mask>
                     <rect x="0" y="0" width="100%" height="100%" mask="url(#mask)"
                         fill="black" fill-opacity="0.2" />
+                </> : null}
+                {graphemes?.map((g, i) => <rect x={g.left} y={g.top}
+                        onClick={() => dispatch({ action: 'set_current_grapheme',
+                            currentGrapheme: i })}
+                        pointer-events="all"
+                        width={g.width} height={g.height}
+                        fill="none" stroke="none" />)}
                 </svg>
-            </div>}
+            </div>
         </div>
     </div>;
 }
