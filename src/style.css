@@ -8,9 +8,8 @@
         height: 100vh;
         display: grid;
         grid-template: "header" auto
-                       "signwindow" 1fr
-                       "toolbar" auto
-                       "explanation" auto
+                       "signwindow" 3fr
+                       "explanation" 1fr
                        "filebar" auto / 100vw;
     }
 

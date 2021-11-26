@@ -16,3 +16,8 @@ When choosing an image, while waiting for the backend.
 ** TODO Prerender
 
 ** TODO Touch gesture scroll
+
+** TODO Navigation
+
+Some state changes should be able to navigate back, eg. show help, change
+grapheme, etc.

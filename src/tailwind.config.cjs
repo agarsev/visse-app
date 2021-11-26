@@ -6,8 +6,13 @@ module.exports = {
       transparent: 'transparent',
       current: 'currentColor',
       white: colors.white,
-      green: colors.lime,
-      gray: colors.blueGray,
+      black: colors.black,
+      primary: colors.lime,
+      secondary: colors.orange,
+      gray: colors.warmGray,
     }
-  }
+  },
+  plugins: [
+    require('@tailwindcss/typography'),
+  ],
 }
