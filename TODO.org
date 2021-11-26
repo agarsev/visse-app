@@ -14,3 +14,5 @@ When choosing an image, while waiting for the backend.
 - [ ] Image reading
 
 ** TODO Prerender
+
+** TODO Touch gesture scroll

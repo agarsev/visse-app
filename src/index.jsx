@@ -13,6 +13,7 @@ const INITIAL_STATE = {
     size: [0, 0],
     graphemes: [],
     currentGrapheme: null,
+    hideCircle: false,
 }
 
 const reducer = (state, action) => {
@@ -27,9 +28,15 @@ const reducer = (state, action) => {
             size: [action.width, action.height],
             graphemes: action.graphemes,
             currentGrapheme: 0,
+            hideCircle: false,
         };
     case 'set_current_grapheme':
-        return { ...state, currentGrapheme: action.currentGrapheme };
+        return { ...state, 
+            currentGrapheme: action.currentGrapheme,
+            hideCircle: false,
+        };
+    case 'hide_circle':
+        return { ...state, hideCircle: true, };
     default:
         return state;
     }
@@ -69,31 +76,27 @@ function Header () {
     </header>;
 }
 
-function SignWindow ({ image, size, graphemes, currentGrapheme, dispatch }) {
+function SignWindow ({ image, size, graphemes, currentGrapheme, hideCircle, dispatch }) {
     const { left, top, width, height } = currentGrapheme != null ?
         graphemes[currentGrapheme] : {};
-    return <div style="grid-area: signwindow;" class="flex">
+    return <div style="grid-area: signwindow;" class="flex"
+        onClick={() => dispatch({ action: 'hide_circle' })}>
         <div class="inline-block m-auto relative">
             <img src={image} />
             <div class="absolute w-full h-full top-0 left-0">
-                <svg width="100%" height="100%" viewBox={`0 0 ${size[0]} ${size[1]}`}>
-                    <filter id="blur">
-                        <feGaussianBlur stdDeviation="4" />
-                    </filter>
-                {currentGrapheme != null ? <>
-                    <mask id="mask" x="0" y="0" width="100%" height="100%">
-                        <rect x="0" y="0" width="100%" height="100%" fill="white" />
-                        <circle cx={left + width/2} cy={top + height/2}
-                            r={1.2 * Math.max(width, height) / 2}
-                            fill="black" filter="url(#blur)" />
-                    </mask>
-                    <rect x="0" y="0" width="100%" height="100%" mask="url(#mask)"
-                        fill="black" fill-opacity="0.2" />
-                </> : null}
+                <svg width="100%" height="100%" class="text-green-400"
+                    viewBox={`0 0 ${size[0]} ${size[1]}`}>
+                {currentGrapheme != null && !hideCircle ? <circle
+                    cx={left + width/2} cy={top + height/2}
+                    r={0.05*size[0] + Math.max(width, height) / 2}
+                    fill="none" stroke="currentColor" stroke-width="2"
+                /> : null}
                 {graphemes?.map((g, i) => <rect x={g.left} y={g.top}
-                        onClick={() => dispatch({ action: 'set_current_grapheme',
-                            currentGrapheme: i })}
-                        pointer-events="all"
+                        onClick={e => {
+                            dispatch({ action: 'set_current_grapheme', currentGrapheme: i })
+                            e.stopPropagation();
+                        }}
+                        pointer-events="all" class="cursor-pointer"
                         width={g.width} height={g.height}
                         fill="none" stroke="none" />)}
                 </svg>
@@ -122,10 +125,6 @@ function Explanation ({ graphemes, currentGrapheme, dispatch }) {
             currentGrapheme: Math.floor(scroller.current.scrollLeft / scroller.current.clientWidth)
         });
     }
-    function onscroll (e) {
-        clearTimeout(onscroll.timeout);
-        onscroll.timeout = setTimeout(updateCurrentGrapheme, 100);
-    }
     function scrollleft () {
         dispatch({ action: 'set_current_grapheme',
             currentGrapheme: currentGrapheme > 0 ? currentGrapheme - 1 : 0,
@@ -152,7 +151,7 @@ function Explanation ({ graphemes, currentGrapheme, dispatch }) {
             </svg>
         </button>
         <div ref={scroller} onScroll={onscroll}
-            class="whitespace-nowrap overflow-x-scroll flex-1"
+            class="whitespace-nowrap overflow-hidden flex-1"
             style="scroll-snap-type: x mandatory;">
             {graphemes.map(g => <GraphemeDescription grapheme={g} />)}
         </div>
