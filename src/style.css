@@ -15,7 +15,7 @@
     @screen md { body {
         grid-template: "header     header"      auto
                        "signwindow explanation" 1fr
-                       "filebar    explanation" auto / 1fr 1fr;
+                       "filebar    explanation" auto / 50vw 50vw;
     } }
 
 }
@@ -26,6 +26,8 @@
     .area-signwindow { grid-area: signwindow; }
     .area-explanation { grid-area: explanation; }
     .area-filebar { grid-area: filebar; }
+
+    .prose { max-width: none !important; }
 
     @responsive {
 
@@ -39,6 +41,15 @@
             margin: 0 auto;
             margin-top: 100vh;
             height: 100vh;
+        }
+
+        .horizontal-scroll {
+            @apply whitespace-nowrap overflow-hidden;
+            scroll-snap-type: x mandatory;
+        }
+
+        .vertical-list {
+            @apply whitespace-normal overflow-y-auto;
         }
 
     }

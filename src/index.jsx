@@ -58,6 +58,8 @@ const reducer = (state, action) => {
 
 const BACKEND_URL = 'http://localhost:8000/recognize';
 
+function is_wide () { return document.documentElement.clientWidth > 768; }
+
 export default function App() {
 
     const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
@@ -155,49 +157,39 @@ function SignWindow ({ image, size, graphemes, currentGrapheme, hideCircle, isLo
 function Explanation ({ graphemes, currentGrapheme, dispatch }) {
 
     const scroller = useRef(null);
-    const can_left = currentGrapheme > 0;
-    const can_right = currentGrapheme < graphemes.length - 1;
+    const can_prev = currentGrapheme > 0;
+    const can_next = currentGrapheme < graphemes.length - 1;
 
     const bt = "w-6 h-20 rounded-full p-1 m-1";
     const bt_ok = bt+" bg-secondary-400 text-white";
     const bt_no = bt+" bg-secondary-200 text-white cursor-default";
 
-    function updateCurrentGrapheme (e) {
-        dispatch({ action: 'set_current_grapheme',
-            currentGrapheme: Math.floor(scroller.current.scrollLeft / scroller.current.clientWidth)
-        });
-    }
-    function scrollleft () {
+    function goprev () {
         dispatch({ action: 'set_current_grapheme',
             currentGrapheme: currentGrapheme > 0 ? currentGrapheme - 1 : 0,
         });
     }
-    function scrollright () {
+    function gonext () {
         dispatch({ action: 'set_current_grapheme',
             currentGrapheme: currentGrapheme < graphemes.length - 1 ? currentGrapheme + 1 : graphemes.length - 1,
         });
     }
 
-    useEffect(() => {
-        scroller.current.scrollTo({ 
-            left: currentGrapheme * scroller.current.clientWidth,
-            behavior: 'smooth'
-        });
-    }, [currentGrapheme]);
-
-    return <div class="flex area-explanation">
-        <button onClick={scrollleft} class={can_left?bt_ok:bt_no} >
+    return <div class="flex area-explanation md:flex-col">
+        <button onClick={goprev} class={"md:hidden "+(can_prev?bt_ok:bt_no)} >
             <svg width="100%" height="100%" viewBox="4 0 16 24">
                 <path d="M15.41 16.09l-4.58-4.59 4.58-4.59L14 5.5l-6 6 6 6z"
                     fill="currentColor" />
             </svg>
         </button>
-        <div ref={scroller} onScroll={onscroll}
-            class="whitespace-nowrap overflow-hidden flex-1"
-            style="scroll-snap-type: x mandatory;">
-            {graphemes.map(g => <GraphemeDescription grapheme={g} />)}
+        <div ref={scroller} class="horizontal-scroll md:vertical-list flex-1 md:pr-12">
+            {graphemes.map((g, i) => <GraphemeDescription
+                grapheme={g}
+                current={i == currentGrapheme}
+                select={() => dispatch({ action: 'set_current_grapheme', currentGrapheme: i })}
+            />)}
         </div>
-        <button onClick={scrollright} class={can_right?bt_ok:bt_no} >
+        <button onClick={gonext} class={"md:hidden "+(can_next?bt_ok:bt_no)} >
             <svg width="100%" height="100%" viewBox="4 0 16 24">
                 <path d="M8.59 16.34l4.58-4.59-4.58-4.59L10 5.75l6 6-6 6z"
                     fill="currentColor" />
@@ -206,10 +198,28 @@ function Explanation ({ graphemes, currentGrapheme, dispatch }) {
     </div>;
 }
 
-function GraphemeDescription ({ grapheme }) {
+function GraphemeDescription ({ grapheme, current, select }) {
+    const div_el = useRef(null);
     const { description } = grapheme;
-    return <div class="w-full inline-block p-4"
-        style="scroll-snap-align: center;">
+    const div_class = "w-full inline-block p-4 rounded "+
+        "md:block md:border border-primary-500 md:my-2 md:cursor-pointer "+
+        (current ? "md:bg-primary-100" : "");
+
+    useEffect(() => {
+        if (current) {
+            div_el.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [current]);
+
+    return <div class={div_class} ref={div_el} style="scroll-snap-align: center;"
+        onClick={current?null:select}>
+        <svg class={"hidden md:inline-block h-5 w-5 mr-4 "+
+                (current?"text-secondary-600":"text-primary-600")}
+            viewBox="0 0 10 10">
+            <circle cx="5" cy="5" r="4" vector-effect="non-scaling-stroke"
+                stroke="currentColor" stroke-width="1"
+                fill={current ? "currentColor" : "none"} />
+        </svg>
         {description}
     </div>
 }
@@ -257,7 +267,7 @@ function HelpPage ({ hidehelp }) {
     const page = useRef(null);
     const slider_style = "z-10 px-2 py-12 bg-white transition-all prose leading-snug prose-primary overflow-y-auto off-to-right md:off-below md:prose-lg md:p-6";
     useEffect(() => {
-        if (document.body.clientWidth > 768) { // md
+        if (is_wide()) {
             page.current.style.marginTop = '0';
         } else {
             page.current.style.marginLeft = '20vw';
