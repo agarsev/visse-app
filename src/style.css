@@ -5,12 +5,42 @@
 @layer base {
 
     body {
-        height: 100vh;
-        display: grid;
-        grid-template: "header" auto
-                       "signwindow" 3fr
+        @apply h-screen grid;
+        grid-template: "header"      auto
+                       "signwindow"  3fr
                        "explanation" 1fr
-                       "filebar" auto / 100vw;
+                       "filebar"     auto / 100vw;
+    }
+
+    @screen md { body {
+        grid-template: "header     header"      auto
+                       "signwindow explanation" 1fr
+                       "filebar    explanation" auto / 1fr 1fr;
+    } }
+
+}
+
+@layer utilities {
+
+    .area-header { grid-area: header; }
+    .area-signwindow { grid-area: signwindow; }
+    .area-explanation { grid-area: explanation; }
+    .area-filebar { grid-area: filebar; }
+
+    @responsive {
+
+        .off-to-right {
+            @apply top-0 bottom-0;
+            margin-left: 100vw;
+            width: 80vw;
+        }
+
+        .off-below {
+            margin: 0 auto;
+            margin-top: 100vh;
+            height: 100vh;
+        }
+
     }
 
 }

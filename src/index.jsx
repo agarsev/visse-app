@@ -89,7 +89,7 @@ export default function App() {
 }
 
 function Header () {
-    return <header class="py-2 mx-4 border-b-2 border-secondary-400 flex">
+    return <header class="area-header py-2 mx-4 border-b-2 border-secondary-400 flex">
         <a href="https://www.ucm.es/visse" class="ml-auto" target="_blank">
             <img src="img/logo_visse_color.svg" class="h-28"
                  alt="Logo del proyecto VisSE"
@@ -99,8 +99,7 @@ function Header () {
 }
 
 function InitialScreen ({}) {
-    return <div style="grid-area: signwindow;"
-        class="prose prose-lg p-4 prose-primary text-center flex flex-col justify-center">
+    return <div class="area-signwindow prose prose-lg p-4 prose-primary text-center flex flex-col justify-center">
         <h3>Elige una imagen de SignoEscritura para ver aquí su explicación</h3>
         <p>Para cargar una imagen, haz click en el botón de abajo.</p>
         <p><a href="#">Ver un ejemplo</a></p>
@@ -139,7 +138,7 @@ function SignWindow ({ image, size, graphemes, currentGrapheme, hideCircle, isLo
             )}
         </>;
     }
-    return <div style="grid-area: signwindow;" class="flex"
+    return <div class="flex area-signwindow"
         onClick={() => dispatch({ action: 'hide_circle' })}>
         <div class="inline-block m-auto relative">
             <img src={image} />
@@ -151,11 +150,6 @@ function SignWindow ({ image, size, graphemes, currentGrapheme, hideCircle, isLo
             </div>
         </div>
     </div>;
-}
-
-function ToolBar () {
-    return <nav style="grid-area: toolbar;">
-    </nav>;
 }
 
 function Explanation ({ graphemes, currentGrapheme, dispatch }) {
@@ -191,7 +185,7 @@ function Explanation ({ graphemes, currentGrapheme, dispatch }) {
         });
     }, [currentGrapheme]);
 
-    return <div style="grid-area: explanation;" class="flex">
+    return <div class="flex area-explanation">
         <button onClick={scrollleft} class={can_left?bt_ok:bt_no} >
             <svg width="100%" height="100%" viewBox="4 0 16 24">
                 <path d="M15.41 16.09l-4.58-4.59 4.58-4.59L14 5.5l-6 6 6 6z"
@@ -222,8 +216,9 @@ function GraphemeDescription ({ grapheme }) {
 
 
 function FileBar ({ choose, showhelp }) {
-    return <div style="grid-area: filebar;"
-        class="flex py-2 px-6 justify-between items-center">
+    const div_style = "area-filebar flex py-2 px-6 justify-between items-center"+
+        " md:justify-center md:space-x-24 md:py-4";
+    return <div class={div_style}>
         <Button3D />
         <UploadButton choose={choose} />
         <HelpButton showhelp={showhelp} />
@@ -260,14 +255,18 @@ function HelpButton ({ showhelp }) {
 
 function HelpPage ({ hidehelp }) {
     const page = useRef(null);
+    const slider_style = "z-10 px-2 py-12 bg-white transition-all prose leading-snug prose-primary overflow-y-auto off-to-right md:off-below md:prose-lg md:p-6";
     useEffect(() => {
-        page.current.style.marginLeft = '20vw';
+        if (document.body.clientWidth > 768) { // md
+            page.current.style.marginTop = '0';
+        } else {
+            page.current.style.marginLeft = '20vw';
+        }
     }, []);
-    return <>
-        <div class="fixed inset-0 bg-black opacity-25"
+    return <div class="fixed inset-0 flex">
+        <div class="absolute inset-0 bg-black opacity-25 flex"
             onClick={hidehelp} />
-        <div class="fixed top-0 bottom-0 px-2 py-12 bg-white transition-all prose leading-snug prose-primary overflow-y-auto"
-            style="margin-left: 100vw; width: 80vw;" ref={page}>
+        <div class={slider_style} ref={page}>
             <p>La <a href="https://www.signwriting.org/spain/lecciones/SignoEscritura/index.html" target="_blank">SignoEscritura</a> es un sistema para transcribir las lenguas de signos en papel. Se usan dibujos y símbolos icónicos para representar las manos y sus movimientos, además de otras partes del cuerpo, y cuestiones como el contacto, la repetición, etc.</p>
             <p>Si quieres leer SignoEscritura pero no la conoces a la perfección, esta herramienta te puede ayudar a entender los distintos símbolos y así mejorar tu vocabulario o tu capacidad de comunicación.</p>
             <h3>Cómo funciona</h3>
@@ -278,7 +277,7 @@ function HelpPage ({ hidehelp }) {
                 <a href="https://www.ucm.es/visse" target="_blank">Saber más</a>
             </p>
         </div>
-    </>;
+    </div>;
 }
 
 
