@@ -9,6 +9,10 @@ import { render } from 'preact';
 import { useReducer, useRef, useEffect } from 'preact/hooks';
 
 const INITIAL_STATE = {
+    // Navigation and UI
+    screen: 'initial',
+    helpVisible: false,
+    isLoading: false,
     // Image data
     image: null,
     size: [0, 0],
@@ -16,8 +20,6 @@ const INITIAL_STATE = {
     graphemes: [],
     currentGrapheme: null,
     hideCircle: false,
-    // UI
-    helpVisible: false,
 }
 
 const reducer = (state, action) => {
@@ -25,7 +27,10 @@ const reducer = (state, action) => {
     case 'set_image':
         if (state.image) URL.revokeObjectURL(state.image);
         return { ...state, 
-            image: URL.createObjectURL(action.image)
+            image: URL.createObjectURL(action.image),
+            size: [0, 0],
+            screen: 'sign',
+            isLoading: true,
         };
     case 'backend_response':
         return { ...state,
@@ -33,6 +38,7 @@ const reducer = (state, action) => {
             graphemes: action.graphemes,
             currentGrapheme: 0,
             hideCircle: false,
+            isLoading: false,
         };
     case 'set_current_grapheme':
         return { ...state, 
@@ -56,6 +62,13 @@ export default function App() {
 
     const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
 
+    let screen;
+    if (state.screen === 'initial') {
+        screen = <InitialScreen />;
+    } else if (state.screen === 'sign') {
+        screen = <SignWindow dispatch={dispatch} {...state} />;
+    }
+
     function choose (file) {
         dispatch({ action: 'set_image', image: file });
         const body = new FormData();
@@ -67,7 +80,7 @@ export default function App() {
 
     return <>
         <Header />
-        <SignWindow dispatch={dispatch} {...state} />
+        {screen}
         <Explanation graphemes={state.graphemes} currentGrapheme={state.currentGrapheme}
             dispatch={dispatch} />
         <FileBar choose={choose} showhelp={() => dispatch({ action: 'show_help' })} />
@@ -85,29 +98,55 @@ function Header () {
     </header>;
 }
 
-function SignWindow ({ image, size, graphemes, currentGrapheme, hideCircle, dispatch }) {
+function InitialScreen ({}) {
+    return <div style="grid-area: signwindow;"
+        class="prose prose-lg p-4 prose-primary text-center flex flex-col justify-center">
+        <h3>Elige una imagen de SignoEscritura para ver aquí su explicación</h3>
+        <p>Para cargar una imagen, haz click en el botón de abajo.</p>
+        <p><a href="#">Ver un ejemplo</a></p>
+        <p><a href="https://www.ucm.es/visse" target="_blank">Saber más</a></p>
+    </div>;
+}
+
+function SignWindow ({ image, size, graphemes, currentGrapheme, hideCircle, isLoading, dispatch }) {
     const { left, top, width, height } = currentGrapheme != null ?
         graphemes[currentGrapheme] : {};
+    let overlay = '';
+    if (isLoading) {
+        overlay = <g transform={`translate(50,50)`}>
+            <g class="animate-spin">
+                <circle cx="0" cy="0" r="30" fill="none" stroke="currentColor"
+                    stroke-width="6" opacity="0.5" />
+                <path d="M30,0 A30,30 0 0 0 0,-30" fill="none" stroke="currentColor"
+                    stroke-width="6" />
+            </g>
+        </g>;
+    } else {
+        overlay = <>
+            {currentGrapheme != null && !hideCircle ?<circle
+                cx={left + width/2} cy={top + height/2}
+                r={0.05*size[0] + Math.max(width, height) / 2}
+                fill="none" stroke="currentColor" stroke-width="2"
+            />: null}
+            {graphemes?.map((g, i) => <rect x={g.left} y={g.top}
+                onClick={e => {
+                    dispatch({ action: 'set_current_grapheme', currentGrapheme: i })
+                    e.stopPropagation();
+                }}
+                pointer-events="all" class="cursor-pointer"
+                width={g.width} height={g.height}
+                fill="none" stroke="none" />
+            )}
+        </>;
+    }
     return <div style="grid-area: signwindow;" class="flex"
         onClick={() => dispatch({ action: 'hide_circle' })}>
         <div class="inline-block m-auto relative">
             <img src={image} />
             <div class="absolute w-full h-full top-0 left-0">
                 <svg width="100%" height="100%" class="text-primary-400"
-                    viewBox={`0 0 ${size[0]} ${size[1]}`}>
-                {currentGrapheme != null && !hideCircle ? <circle
-                    cx={left + width/2} cy={top + height/2}
-                    r={0.05*size[0] + Math.max(width, height) / 2}
-                    fill="none" stroke="currentColor" stroke-width="2"
-                /> : null}
-                {graphemes?.map((g, i) => <rect x={g.left} y={g.top}
-                        onClick={e => {
-                            dispatch({ action: 'set_current_grapheme', currentGrapheme: i })
-                            e.stopPropagation();
-                        }}
-                        pointer-events="all" class="cursor-pointer"
-                        width={g.width} height={g.height}
-                        fill="none" stroke="none" />)}
+                    viewBox={`0 0 ${size[0] || 100} ${size[1] || 100}`}>
+                    {overlay}
                 </svg>
             </div>
         </div>
@@ -201,7 +240,7 @@ function Button3D ({ enabled }) {
 function UploadButton ({ choose }) {
     const input = useRef(null);
     return <>
-        <input class="hidden" type="file" ref={input}
+        <input class="hidden" type="file" ref={input} accept="image/*"
             onChange={() => choose(input.current.files[0]) } />
         <button class="rounded-full bg-primary-600 w-20 h-20 p-3 text-white" onClick={() => input.current.click()}>
             <svg width="100%" height="100%" viewBox="0 0 24 24">

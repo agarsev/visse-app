@@ -4,7 +4,8 @@ First make it work in general.
 
 ** TODO Sort graphemes geographically
 
-** TODO Loading indicator
+** DONE Loading indicator
+   CLOSED: [2021-11-29 Mon 15:47]
 
 When choosing an image, while waiting for the backend.
 
@@ -21,3 +22,7 @@ When choosing an image, while waiting for the backend.
 
 Some state changes should be able to navigate back, eg. show help, change
 grapheme, etc.
+
+** TODO Video
+
+Vídeo explicativo en LSE, quizá previo a la initial screen
