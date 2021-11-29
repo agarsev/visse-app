@@ -39,6 +39,10 @@ class Response(BaseModel):
     explanations: list[Explanation]
 
 
+class NumberExamples(BaseModel):
+    number: int
+
+
 def logogram_to_response(logo: Logogram):
     width, height = logo.image.size
     response = Response(
@@ -96,7 +100,13 @@ def recognize(image: bytes = File(...)):
     return logogram_to_response(logo)
 
 
-@app.get("/example/{index}", response_model=Response)
+@app.get("/examples/number", response_model=NumberExamples)
+def examples_length():
+    '''Return the number of examples available.'''
+    return NumberExamples(number=len(examples))
+
+
+@app.get("/examples/{index}", response_model=Response)
 def example(index: int):
     '''Return an example SignWriting image with its explanations.'''
     if index < 0 or index >= len(examples):

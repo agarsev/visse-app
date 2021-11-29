@@ -81,15 +81,16 @@ export default function App() {
         .then(res => dispatch({ action: 'backend_response', ...res }))
     }
 
-    function get_example () {
+    async function get_example () {
         dispatch({ action: 'set_loading' });
-        fetch(BACKEND_URL+'example/0')
-        .then(res => res.json())
-        .then(async res => {
-            const image = await fetch("data:image/png;base64,"+res.image)
-                .then(res => res.blob())
-            dispatch({ action: 'backend_response', ...res, image });
-        });
+        const { number } = await (fetch(BACKEND_URL+'examples/number')
+            .then(res => res.json()));
+        const which = Math.floor(Math.random() * number);
+        const res = await (fetch(BACKEND_URL+'examples/'+which)
+            .then(res => res.json()))
+        const image = await (fetch("data:image/png;base64,"+res.image)
+            .then(res => res.blob()))
+        dispatch({ action: 'backend_response', ...res, image });
     }
 
     let screen;
