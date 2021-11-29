@@ -18,6 +18,11 @@
                        "filebar    explanation" auto / 50vw 50vw;
     } }
 
+    em {
+        font-style: normal;
+        font-weight: bold;
+    }
+
 }
 
 @layer utilities {

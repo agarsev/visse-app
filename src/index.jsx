@@ -16,9 +16,9 @@ const INITIAL_STATE = {
     // Image data
     image: null,
     size: [0, 0],
-    // Grapheme data
-    graphemes: [],
-    currentGrapheme: null,
+    // Explanations data
+    explanations: [],
+    currentExpl: null,
     hideCircle: false,
 }
 
@@ -35,14 +35,14 @@ const reducer = (state, action) => {
     case 'backend_response':
         return { ...state,
             size: [action.width, action.height],
-            graphemes: action.graphemes,
-            currentGrapheme: 0,
+            explanations: action.explanations,
+            currentExpl: 0,
             hideCircle: false,
             isLoading: false,
         };
-    case 'set_current_grapheme':
+    case 'set_current_expl':
         return { ...state, 
-            currentGrapheme: action.currentGrapheme,
+            currentExpl: action.currentExpl,
             hideCircle: false,
         };
     case 'hide_circle':
@@ -83,8 +83,8 @@ export default function App() {
     return <>
         <Header />
         {screen}
-        <Explanation graphemes={state.graphemes} currentGrapheme={state.currentGrapheme}
-            dispatch={dispatch} />
+        <ExplanationList explanations={state.explanations}
+            currentExpl={state.currentExpl} dispatch={dispatch} />
         <FileBar choose={choose} showhelp={() => dispatch({ action: 'show_help' })} />
         {state.helpVisible && <HelpPage hidehelp={() => dispatch({ action: 'hide_help' })} />}
     </>;
@@ -109,9 +109,9 @@ function InitialScreen ({}) {
     </div>;
 }
 
-function SignWindow ({ image, size, graphemes, currentGrapheme, hideCircle, isLoading, dispatch }) {
-    const { left, top, width, height } = currentGrapheme != null ?
-        graphemes[currentGrapheme] : {};
+function SignWindow ({ image, size, explanations, currentExpl, hideCircle, isLoading, dispatch }) {
+    const { left, top, width, height } = currentExpl != null ?
+        explanations[currentExpl] : {};
     let overlay = '';
     if (isLoading) {
         overlay = <g transform={`translate(50,50)`}>
@@ -124,14 +124,14 @@ function SignWindow ({ image, size, graphemes, currentGrapheme, hideCircle, isLo
         </g>;
     } else {
         overlay = <>
-            {currentGrapheme != null && !hideCircle ?<circle
+            {currentExpl != null && !hideCircle ?<circle
                 cx={left + width/2} cy={top + height/2}
                 r={0.05*size[0] + Math.max(width, height) / 2}
                 fill="none" stroke="currentColor" stroke-width="2"
             />: null}
-            {graphemes?.map((g, i) => <rect x={g.left} y={g.top}
+            {explanations?.map((g, i) => <rect x={g.left} y={g.top}
                 onClick={e => {
-                    dispatch({ action: 'set_current_grapheme', currentGrapheme: i })
+                    dispatch({ action: 'set_current_expl', currentExpl: i })
                     e.stopPropagation();
                 }}
                 pointer-events="all" class="cursor-pointer"
@@ -154,24 +154,24 @@ function SignWindow ({ image, size, graphemes, currentGrapheme, hideCircle, isLo
     </div>;
 }
 
-function Explanation ({ graphemes, currentGrapheme, dispatch }) {
+function ExplanationList ({ explanations, currentExpl, dispatch }) {
 
     const scroller = useRef(null);
-    const can_prev = currentGrapheme > 0;
-    const can_next = currentGrapheme < graphemes.length - 1;
+    const can_prev = currentExpl > 0;
+    const can_next = currentExpl < explanations.length - 1;
 
     const bt = "w-6 h-20 rounded-full p-1 m-1";
     const bt_ok = bt+" bg-secondary-400 text-white";
     const bt_no = bt+" bg-secondary-200 text-white cursor-default";
 
     function goprev () {
-        dispatch({ action: 'set_current_grapheme',
-            currentGrapheme: currentGrapheme > 0 ? currentGrapheme - 1 : 0,
+        dispatch({ action: 'set_current_expl',
+            currentExpl: currentExpl > 0 ? currentExpl - 1 : 0,
         });
     }
     function gonext () {
-        dispatch({ action: 'set_current_grapheme',
-            currentGrapheme: currentGrapheme < graphemes.length - 1 ? currentGrapheme + 1 : graphemes.length - 1,
+        dispatch({ action: 'set_current_expl',
+            currentExpl: currentExpl < explanations.length - 1 ? currentExpl + 1 : explanations.length - 1,
         });
     }
 
@@ -183,10 +183,10 @@ function Explanation ({ graphemes, currentGrapheme, dispatch }) {
             </svg>
         </button>
         <div ref={scroller} class="horizontal-scroll md:vertical-list flex-1 md:pr-12">
-            {graphemes.map((g, i) => <GraphemeDescription
-                grapheme={g}
-                current={i == currentGrapheme}
-                select={() => dispatch({ action: 'set_current_grapheme', currentGrapheme: i })}
+            {explanations.map((x, i) => <Explanation
+                explanation={x}
+                current={i == currentExpl}
+                select={() => dispatch({ action: 'set_current_expl', currentExpl: i })}
             />)}
         </div>
         <button onClick={gonext} class={"md:hidden "+(can_next?bt_ok:bt_no)} >
@@ -198,10 +198,10 @@ function Explanation ({ graphemes, currentGrapheme, dispatch }) {
     </div>;
 }
 
-function GraphemeDescription ({ grapheme, current, select }) {
+function Explanation ({ explanation, current, select }) {
     const div_el = useRef(null);
-    const { description } = grapheme;
-    const div_class = "w-full inline-block p-4 rounded "+
+    const { text } = explanation;
+    const div_class = "w-full inline-block p-4 rounded whitespace-normal "+
         "md:block md:border border-primary-500 md:my-2 md:cursor-pointer "+
         (current ? "md:bg-primary-100" : "");
 
@@ -211,16 +211,22 @@ function GraphemeDescription ({ grapheme, current, select }) {
         }
     }, [current]);
 
+    function applyStyle(text) {
+        return text.replace(/\*([^*]*)\*/g,
+            "<em>$1</em>");
+    }
+
     return <div class={div_class} ref={div_el} style="scroll-snap-align: center;"
         onClick={current?null:select}>
-        <svg class={"hidden md:inline-block h-5 w-5 mr-4 "+
+        <svg class={"hidden md:inline-block h-full float-left w-5 mr-4 "+
                 (current?"text-secondary-600":"text-primary-600")}
             viewBox="0 0 10 10">
             <circle cx="5" cy="5" r="4" vector-effect="non-scaling-stroke"
                 stroke="currentColor" stroke-width="1"
                 fill={current ? "currentColor" : "none"} />
         </svg>
-        {description}
+        <p class="text-primary-900"
+            dangerouslySetInnerHTML={{__html: applyStyle(text) }} />
     </div>
 }
 
