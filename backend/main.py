@@ -5,27 +5,19 @@
 # Receives an image, and returns the recognised SignWriting data contained in
 # it, with textual descriptions of the different symbols contained.
 
+import base64
 from io import BytesIO
-from fastapi import FastAPI, File
+from fastapi import FastAPI, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 from pydantic import BaseModel
 from quevedo import Dataset, Logogram
 
+from .descriptions import get_description
+
+
 CORPUS_PATH = Path(__file__).parent.parent.parent / 'corpus'
-PIPELINE = 'p_full'
-
-app = FastAPI()
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=['*'],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-ds = Dataset(CORPUS_PATH)
-pipeline = ds.get_pipeline(PIPELINE)
+PIPELINE_NAME = 'p_full'
 
 
 class Explanation(BaseModel):
@@ -41,18 +33,10 @@ class Explanation(BaseModel):
 
 
 class Response(BaseModel):
+    image: bytes = None
     width: int
     height: int
     explanations: list[Explanation]
-
-
-@app.post("/recognize", response_model=Response)
-def recognize(image: bytes = File(...)):
-    '''Recognize the SignWriting found in an image, and return explanations for
-    the different symbols found.'''
-    logo = Logogram(image=BytesIO(image))
-    pipeline.run(logo)
-    return logogram_to_response(logo)
 
 
 def logogram_to_response(logo: Logogram):
@@ -79,25 +63,42 @@ def logogram_to_response(logo: Logogram):
     return response
 
 
-def get_description(tags):
-    cl = tags.get('CLASS')
-    sh = tags.get('SHAPE')
-    if cl is None or sh is None:
-        return None
-    elif cl == 'HEAD':
-        return 'head'
-    elif cl == 'DIAC':
-        return 'diacritic'
-    elif cl == 'HAND':
-        return 'hand'
-    elif cl == 'STEM':
-        if sh == 's':
-            return 'La varilla simple indica que el movimiento es *horizontal*, paralelo al suelo.'
-        elif sh == 'd':
-            return 'La varilla doble indica que el movimiento es *vertical*, paralelo a la pared.'
-        else:
-            return None
-    elif cl == 'ARRO':
-        return 'arrow'
-    elif cl == 'ARC':
-        return 'arc'
+def prepare_example(subset, index):
+    logo = ds.get_single(Logogram.target, subset, index)
+    res = logogram_to_response(logo)
+    buff = BytesIO()
+    logo.image.save(buff, format='PNG')
+    res.image = base64.b64encode(buff.getvalue()).decode('ascii')
+    return res
+
+
+ds = Dataset(CORPUS_PATH)
+pipeline = ds.get_pipeline(PIPELINE_NAME)
+examples = [prepare_example(subset, i) for (subset, i) in
+            (('A1_T1', '7'), ('A1_T1', '14'), ('A1_T1', '16'))]
+
+app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*'],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+@app.post("/recognize", response_model=Response)
+def recognize(image: bytes = File(...)):
+    '''Recognize the SignWriting found in an image, and return explanations for
+    the different symbols found.'''
+    logo = Logogram(image=BytesIO(image))
+    pipeline.run(logo)
+    return logogram_to_response(logo)
+
+
+@app.get("/example/{index}", response_model=Response)
+def example(index: int):
+    '''Return an example SignWriting image with its explanations.'''
+    if index < 0 or index >= len(examples):
+        raise HTTPException(status_code=404)
+    return examples[index]

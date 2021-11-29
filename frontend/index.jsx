@@ -33,7 +33,13 @@ const reducer = (state, action) => {
             isLoading: true,
         };
     case 'backend_response':
-        return { ...state,
+        let image = null;
+        if (action.image) {
+            if (state.image) URL.revokeObjectURL(state.image);
+            image = URL.createObjectURL(action.image);
+        }
+        return { ...state, image,
+            screen: 'sign',
             size: [action.width, action.height],
             explanations: action.explanations,
             currentExpl: 0,
@@ -51,12 +57,14 @@ const reducer = (state, action) => {
         return { ...state, helpVisible: true, };
     case 'hide_help':
         return { ...state, helpVisible: false, };
+    case 'set_loading':
+        return { ...state, isLoading: true, };
     default:
         return state;
     }
 }
 
-const BACKEND_URL = 'http://localhost:8000/recognize';
+const BACKEND_URL = 'http://localhost:8000/';
 
 function is_wide () { return document.documentElement.clientWidth > 768; }
 
@@ -64,20 +72,31 @@ export default function App() {
 
     const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
 
-    let screen;
-    if (state.screen === 'initial') {
-        screen = <InitialScreen />;
-    } else if (state.screen === 'sign') {
-        screen = <SignWindow dispatch={dispatch} {...state} />;
-    }
-
     function choose (file) {
         dispatch({ action: 'set_image', image: file });
         const body = new FormData();
         body.append('image', file);
-        fetch(BACKEND_URL, { method: 'POST', body })
+        fetch(BACKEND_URL+'recognize', { method: 'POST', body })
         .then(res => res.json())
         .then(res => dispatch({ action: 'backend_response', ...res }))
+    }
+
+    function get_example () {
+        dispatch({ action: 'set_loading' });
+        fetch(BACKEND_URL+'example/0')
+        .then(res => res.json())
+        .then(async res => {
+            const image = await fetch("data:image/png;base64,"+res.image)
+                .then(res => res.blob())
+            dispatch({ action: 'backend_response', ...res, image });
+        });
+    }
+
+    let screen;
+    if (state.screen === 'initial') {
+        screen = <InitialScreen get_example={get_example} />;
+    } else if (state.screen === 'sign') {
+        screen = <SignWindow dispatch={dispatch} {...state} />;
     }
 
     return <>
@@ -100,11 +119,11 @@ function Header () {
     </header>;
 }
 
-function InitialScreen ({}) {
+function InitialScreen ({ get_example }) {
     return <div class="area-signwindow prose prose-lg p-4 prose-primary text-center flex flex-col justify-center">
         <h3>Elige una imagen de SignoEscritura para ver aquí su explicación</h3>
         <p>Para cargar una imagen, haz click en el botón de abajo.</p>
-        <p><a href="#">Ver un ejemplo</a></p>
+        <p><a class="cursor-pointer" onclick={get_example}>Ver un ejemplo</a></p>
         <p><a href="https://www.ucm.es/visse" target="_blank">Saber más</a></p>
     </div>;
 }
