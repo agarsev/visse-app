@@ -12,7 +12,7 @@ from pathlib import Path
 from pydantic import BaseModel
 from quevedo import Dataset, Logogram
 
-CORPUS_PATH = Path(__file__).parent.parent / 'corpus'
+CORPUS_PATH = Path(__file__).parent.parent.parent / 'corpus'
 PIPELINE = 'p_full'
 
 app = FastAPI()

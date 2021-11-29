@@ -1,5 +1,5 @@
 OUT:=dist
-SRC:=src
+SRC:=frontend
 
 ESBUILD_OPTS:=--inject:$(SRC)/preact-shim.js --jsx-factory=h --jsx-fragment=Fragment 
 ENV:=
@@ -36,7 +36,7 @@ clean:
 
 serve:
 	@live-server --cors --no-css-inject --wait=200 $(OUT) &
-	cd ../backend ; poetry run uvicorn main:app --reload &
+	poetry run uvicorn backend.main:app --reload &
 	wait
 
 
