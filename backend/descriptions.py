@@ -92,15 +92,22 @@ def get_description(tags):
             return None
 
 
+def hand_description(sh, var, rot, ref):
+    shape = hand_shape(sh)
+    ori = hand_orientation(var, rot, ref)
+    if shape is None or ori is None:
+        return None
+    return '{} {}'.format(shape, ori)
+
+
 fixed_hands = {
     'picam++': 'El puño cerrado.',
     'TE': 'La mano como en la "T" del dactilológico.',
 }
-
 hand_regex = re.compile(r'([picamPICAM]+)([rg]?)([+-]?)(O?)')
 
 
-def hand_description(sh, var, rot, ref):
+def hand_shape(sh):
     if sh in fixed_hands:
         return fixed_hands[sh]
 
@@ -181,3 +188,62 @@ def hand_description(sh, var, rot, ref):
         text += '.'
 
     return text
+
+
+all_angles = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
+
+
+def rotate(angle, amount):
+    return all_angles[(all_angles.index(angle) + amount) % len(all_angles)]
+
+
+hor_angles = {
+    'N': 'delante',
+    'NE': 'delante y a la derecha',
+    'E': 'la derecha',
+    'SE': 'detrás y a la derecha',
+    'S': 'ti',  # detrás
+    'SW': 'detrás y a la izquierda',
+    'W': 'la izquierda',
+    'NW': 'delante y a la izquierda',
+}
+vert_angles = {
+    'N': 'arriba',
+    'NE': 'arriba y a la derecha',
+    'E': 'la derecha',
+    'SE': 'abajo y a la derecha',
+    'S': 'abajo',
+    'SW': 'abajo y a la izquierda',
+    'W': 'la izquierda',
+    'NW': 'arriba y a la izquierda',
+}
+
+
+def hand_orientation(var, rot, ref):
+    if var == 'w':
+        palm = hor_angles['S']
+        dist = vert_angles[rot]
+    elif var == 'hw':
+        palm = vert_angles['N']
+        dist = hor_angles[rot]
+    elif var == 'b':
+        palm = hor_angles['N']
+        dist = vert_angles[rot]
+    elif var == 'hb':
+        palm = vert_angles['S']
+        dist = hor_angles[rot]
+    elif var == 'h' and ref == 'n':
+        palm = vert_angles[rotate(rot, -2)]
+        dist = vert_angles[rot]
+    elif var == 'h' and ref == 'y':
+        dist = vert_angles[rot]
+        palm = vert_angles[rotate(rot, 2)]
+    elif var == 'hh' and ref == 'n':
+        palm = hor_angles[rotate(rot, -2)]
+        dist = hor_angles[rot]
+    elif var == 'hh' and ref == 'y':
+        dist = hor_angles[rot]
+        palm = hor_angles[rotate(rot, 2)]
+    else:
+        return None
+    return f'La mano hacia {dist}, con la palma mirando hacia {palm}.'
