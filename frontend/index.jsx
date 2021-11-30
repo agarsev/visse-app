@@ -33,7 +33,7 @@ const reducer = (state, action) => {
             isLoading: true,
         };
     case 'backend_response':
-        let image = null;
+        let image = state.image;
         if (action.image) {
             if (state.image) URL.revokeObjectURL(state.image);
             image = URL.createObjectURL(action.image);
