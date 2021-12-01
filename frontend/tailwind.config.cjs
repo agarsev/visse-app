@@ -1,6 +1,9 @@
 const colors = require('tailwindcss/colors');
 
 module.exports = {
+  purge: [
+    './frontend/**/*.jsx',
+  ],
   theme: {
     colors: {
       transparent: 'transparent',

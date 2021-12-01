@@ -2,7 +2,8 @@
 
 First make it work in general.
 
-** TODO Sort graphemes geographically
+** DONE Sort graphemes geographically
+   CLOSED: [2021-12-01 Wed 23:54]
 
 ** DONE Loading indicator
    CLOSED: [2021-11-29 Mon 15:47]

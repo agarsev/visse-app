@@ -51,8 +51,13 @@ const reducer = (state, action) => {
             isLoading: false,
         };
     case 'set_current_expl':
-        return { ...state, 
-            screen: 'sign',
+        let screen;
+        if (!state.explanations[action.currentExpl].hand) {
+            screen = 'sign';
+        } else {
+            screen = state.screen;
+        }
+        return { ...state, screen,
             currentExpl: action.currentExpl,
             hideCircle: false,
         };

@@ -9,6 +9,7 @@ import base64
 from io import BytesIO
 from fastapi import FastAPI, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from functools import cmp_to_key
 from pathlib import Path
 from pydantic import BaseModel
 from quevedo import Dataset, Logogram
@@ -58,7 +59,7 @@ def logogram_to_response(logo: Logogram):
         height=height,
         explanations=[]
     )
-    for grapheme in logo.graphemes:
+    for grapheme in sort2D(logo.graphemes):
         description = get_description(grapheme.tags)
         if description is None:
             continue
@@ -87,6 +88,21 @@ def prepare_example(subset, index):
     logo.image.save(buff, format='PNG')
     res.image = base64.b64encode(buff.getvalue()).decode('ascii')
     return res
+
+
+def box_compare(a, b):
+    '''Compare two bounding boxes to order them in 2D.'''
+    xdist = (a.box[0]+a.box[2]/2) - (b.box[0]+b.box[2]/2)
+    ydist = (a.box[1]+a.box[3]/2) - (b.box[1]+b.box[3]/2)
+    if abs(xdist) < 0.1:
+        return ydist
+    return 10*xdist
+
+
+def sort2D(graphemes):
+    '''Sort a list of graphemes by rough x-coordinate, and then by
+    y-coordinate.'''
+    return sorted(graphemes, key=cmp_to_key(box_compare))
 
 
 ds = Dataset(CORPUS_PATH)
