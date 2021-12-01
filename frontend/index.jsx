@@ -103,9 +103,11 @@ export default function App() {
     return <>
         <Header />
         {screen}
-        <ExplanationList explanations={state.explanations}
-            currentExpl={state.currentExpl} dispatch={dispatch} />
-        <FileBar choose={choose} showhelp={() => dispatch({ action: 'show_help' })} />
+        {state.screen !== 'initial' && <ExplanationList
+            explanations={state.explanations}
+            currentExpl={state.currentExpl} dispatch={dispatch} />}
+        <FileBar wide={state.screen === 'initial'}
+            choose={choose} showhelp={() => dispatch({ action: 'show_help' })} />
         {state.helpVisible && <HelpPage hidehelp={() => dispatch({ action: 'hide_help' })} />}
     </>;
 }
@@ -121,7 +123,7 @@ function Header () {
 }
 
 function InitialScreen ({ get_example }) {
-    return <div class="area-signwindow prose prose-lg p-4 prose-primary text-center flex flex-col justify-center">
+    return <div class="area-signwindow md:expand-wide prose prose-lg p-4 prose-primary text-center flex flex-col justify-center">
         <h3>Elige una imagen de SignoEscritura para ver aquí su explicación</h3>
         <p>Para cargar una imagen, haz click en el botón de abajo.</p>
         <p><a class="cursor-pointer" onclick={get_example}>Ver un ejemplo</a></p>
@@ -195,14 +197,14 @@ function ExplanationList ({ explanations, currentExpl, dispatch }) {
         });
     }
 
-    return <div class="flex area-explanation md:flex-col">
+    return <div class="flex items-center area-explanation md:flex-col">
         <button onClick={goprev} class={"md:hidden "+(can_prev?bt_ok:bt_no)} >
             <svg width="100%" height="100%" viewBox="4 0 16 24">
                 <path d="M15.41 16.09l-4.58-4.59 4.58-4.59L14 5.5l-6 6 6 6z"
                     fill="currentColor" />
             </svg>
         </button>
-        <div ref={scroller} class="horizontal-scroll md:vertical-list flex-1 md:pr-12">
+        <div ref={scroller} class="h-full horizontal-scroll md:vertical-list flex-1 md:pr-12">
             {explanations.map((x, i) => <Explanation
                 explanation={x}
                 current={i == currentExpl}
@@ -221,8 +223,8 @@ function ExplanationList ({ explanations, currentExpl, dispatch }) {
 function Explanation ({ explanation, current, select }) {
     const div_el = useRef(null);
     const { text } = explanation;
-    const div_class = "w-full inline-block p-4 rounded whitespace-normal "+
-        "md:block md:border border-primary-500 md:my-2 md:cursor-pointer "+
+    const div_class = "w-full inline-block p-4 rounded whitespace-normal align-middle "+
+        "md:block md:h-auto md:border border-primary-500 md:my-2 md:cursor-pointer "+
         (current ? "md:bg-primary-100" : "");
 
     useEffect(() => {
@@ -251,9 +253,10 @@ function Explanation ({ explanation, current, select }) {
 }
 
 
-function FileBar ({ choose, showhelp }) {
+function FileBar ({ choose, showhelp, wide }) {
     const div_style = "area-filebar flex py-2 px-6 justify-between items-center"+
-        " md:justify-center md:space-x-24 md:py-4";
+        " md:justify-center md:space-x-24 md:py-4 "+
+        (wide?"md:expand-wide":"");
     return <div class={div_style}>
         <Button3D />
         <UploadButton choose={choose} />

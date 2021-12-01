@@ -36,6 +36,8 @@
 
     @responsive {
 
+        .expand-wide { grid-column: 1 / 3; }
+
         .off-to-right {
             @apply top-0 bottom-0;
             margin-left: 100vw;
