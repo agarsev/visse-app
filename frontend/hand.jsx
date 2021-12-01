@@ -1,31 +1,38 @@
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
+
+const HAND_SCALE = 0.4;
 
 function init_scene(canvas) {
     const scene = new THREE.Scene();
 
     const camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
     camera.position.z = CAMERA_DISTANCE;
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(0, 10, 20);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    directionalLight.position.set(-1, 1, 1);
     camera.add(directionalLight);
     scene.add(camera);
-
+    const controls = MyOrbitControls(camera, canvas);
 
     const renderer = new THREE.WebGLRenderer({ canvas: canvas });
     renderer.setSize(canvas.width, canvas.height);
-    const controls = MyOrbitControls(camera, canvas);
-    
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const material = new THREE.MeshPhongMaterial({
-        color: 0xffffff,
-        specular: 0xffffff,
-        shininess: 100,
-        flatShading: true,
-    });
-    var cube = new THREE.Mesh(geometry, material);
-    scene.add(cube);
+    renderer.setClearColor(0xffffff, 1);
 
+    const loader = new GLTFLoader();
+    loader.load('img/mano.glb', gltf => {
+        console.log(gltf);
+        const hand = gltf.scene;
+        hand.scale.set(HAND_SCALE, HAND_SCALE, HAND_SCALE);
+        hand.rotation.y = -Math.PI/2;
+        hand.position.set(0, -HAND_SCALE, 0);
+        scene.add(hand);
+        const index = scene.getObjectByName('M1');
+        index.setRotationFromAxisAngle(new THREE.Vector3(0, 0, -1), Math.PI/2);
+    });
+    
     requestAnimationFrame(function animate() {
         requestAnimationFrame(animate);
         controls.update();
