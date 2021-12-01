@@ -13,11 +13,18 @@ from pathlib import Path
 from pydantic import BaseModel
 from quevedo import Dataset, Logogram
 
-from .descriptions import get_description
+from .descriptions import get_description, all_angles
 
 
 CORPUS_PATH = Path(__file__).parent.parent.parent / 'corpus'
 PIPELINE_NAME = 'p_full'
+
+
+class HandExplanation(BaseModel):
+    '''Hand data for the 3D model.'''
+    ori: str
+    rot: int
+    ref: bool
 
 
 class Explanation(BaseModel):
@@ -30,7 +37,7 @@ class Explanation(BaseModel):
     width: int
     height: int
     text: str
-    is_hand: bool = False
+    hand: HandExplanation = None
 
 
 class Response(BaseModel):
@@ -56,17 +63,20 @@ def logogram_to_response(logo: Logogram):
         if description is None:
             continue
         cx, cy, w, h = grapheme.box
-        is_hand = grapheme.tags.get('CLASS') == 'HAND'
-        response.explanations.append(
-            Explanation(
-                left=(cx-w/2)*width,
-                top=(cy-h/2)*height,
-                width=w*width,
-                height=h*height,
-                text=description,
-                is_hand=is_hand
-            )
+        expl = Explanation(
+            left=(cx-w/2)*width,
+            top=(cy-h/2)*height,
+            width=w*width,
+            height=h*height,
+            text=description,
         )
+        if grapheme.tags.get('CLASS') == 'HAND':
+            expl.hand = HandExplanation(
+                ori=grapheme.tags['VAR'],
+                rot=all_angles.index(grapheme.tags['ROT']),
+                ref=grapheme.tags['REF'] == 'y',
+            )
+        response.explanations.append(expl)
     return response
 
 

@@ -1,7 +1,7 @@
 OUT:=dist
 SRC:=frontend
 
-ESB_OPTS:=--bundle --format=esm --minify
+ESB_OPTS:=--bundle --format=esm
 JSX_OPTS:=--inject:$(SRC)/preact-shim.js --jsx-factory=h --jsx-fragment=Fragment 
 ENV:=
 TW_OPTS:=
@@ -10,6 +10,7 @@ PROD:=0
 ifeq ($(PROD), 1)
 ENV+=NODE_ENV=production
 TW_OPTS+=--minify
+ESB_OPTS+=--minify
 endif
 
 TARGETS:=$(addprefix $(OUT)/, index.html index.js hand.js style.css)

@@ -10,7 +10,7 @@ import { useReducer, useRef, useEffect } from 'preact/hooks';
 
 const BACKEND_URL = 'http://localhost:8000/';
 const HAND_MODULE = './hand.js';
-let set_hand = null;
+let threed = null; // Lazy load
 
 const INITIAL_STATE = {
     // Navigation and UI
@@ -101,12 +101,11 @@ export default function App() {
     }
 
     async function show_3d () {
-        if (set_hand !== null) {
+        if (threed !== null) {
             dispatch({ action: 'show_3d' });
         } else {
             dispatch({ action: 'set_loading' });
-            const module = await import(HAND_MODULE);
-            set_hand = module.set_hand;
+            threed = await import(HAND_MODULE);
             dispatch({ action: 'show_3d' });
         }
     }
@@ -127,7 +126,7 @@ export default function App() {
             explanations={explanations}
             currentExpl={currentExpl} dispatch={dispatch} />}
         <FileBar wide={state.screen === 'initial'}
-            is_hand={explanations[currentExpl]?.is_hand}
+            is_hand={currentExpl !== null && explanations[currentExpl].hand !== null}
             show_3d={show_3d}
             choose={choose} showhelp={() => dispatch({ action: 'show_help' })} />
         {state.helpVisible && <HelpPage hidehelp={() => dispatch({ action: 'hide_help' })} />}
@@ -206,7 +205,10 @@ function ThreeD ({ image, explanations, currentExpl }) {
     useEffect(() => {
         canvas.current.width = container.current.clientWidth;
         canvas.current.height = container.current.clientHeight;
-        set_hand(canvas.current, explanations[currentExpl]);
+        threed.init_scene(canvas.current);
+    }, []);
+    useEffect(() => {
+        threed.set_hand(explanations[currentExpl].hand);
     }, [currentExpl]);
     return <div class="area-signwindow relative" ref={container}>
         <canvas ref={canvas} />

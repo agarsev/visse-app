@@ -1,13 +1,23 @@
+/* 2021-12-01 Antonio F. G. Sevilla <afgs@ucm.es>
+ * Licensed under the Open Software License version 3.0
+ *
+ * 3D hand module for showing hand configuration and orientation.
+ * Part of the VisSE project: https://www.ucm.es/visse
+ */
+
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 
-const HAND_SCALE = 0.4;
+const HAND_SCALE = 0.5;
+const CAMERA_DISTANCE = 4;
 
-function init_scene(canvas) {
+let model = null;
+
+export function init_scene(canvas) {
     const scene = new THREE.Scene();
 
-    const camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 1, 1000);
     camera.position.z = CAMERA_DISTANCE;
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
@@ -21,15 +31,16 @@ function init_scene(canvas) {
     renderer.setSize(canvas.width, canvas.height);
     renderer.setClearColor(0xffffff, 1);
 
+    model = new THREE.Object3D();
+    scene.add(model);
+
     const loader = new GLTFLoader();
     loader.load('img/mano.glb', gltf => {
         const hand = gltf.scene;
         hand.scale.set(HAND_SCALE, HAND_SCALE, HAND_SCALE);
         hand.rotation.y = -Math.PI/2;
         hand.position.set(0, -HAND_SCALE, 0);
-        scene.add(hand);
-        const index = scene.getObjectByName('M1');
-        index.setRotationFromAxisAngle(new THREE.Vector3(0, 0, -1), Math.PI/2);
+        model.add(hand);
     });
     
     requestAnimationFrame(function animate() {
@@ -41,13 +52,7 @@ function init_scene(canvas) {
 }
 
 
-export function set_hand(canvas, hand) {
-    init_scene(canvas);
-}
-
-
 const BOUNCE_BACK_SPEED = 0.3;
-const CAMERA_DISTANCE = 3;
 const CAMERA_ROLL_AMOUNT = 8;
 const MAX_X = 2;
 const MAX_Y = 2;
@@ -107,4 +112,48 @@ function MyOrbitControls (camera, canvas) {
     canvas.addEventListener('touchcancel', cancel_drag);
 
     return { update }
+}
+
+export function set_hand({ ori, rot, ref, left = false }) {
+    model.scale.set(left?-1:1, 1, 1);
+    set_hand_orientation(ori, rot, ref, left);
+    set_hand_shape();
+}
+
+function set_hand_orientation(ori, rot, ref) {
+    model.rotation.set(0, 0, 0);
+    let rot_axis;
+    if (ori == 'w') {
+        rot_axis = new THREE.Vector3(0, 0, 1);
+    } else if (ori == 'b') {
+        model.rotateOnWorldAxis(new THREE.Vector3(0, 1, 0), Math.PI);
+        rot_axis = new THREE.Vector3(0, 0, 1);
+    } else if (ori == 'h' && ref) {
+        model.rotateOnWorldAxis(new THREE.Vector3(0, 1, 0), 0.5*Math.PI);
+        rot_axis = new THREE.Vector3(0, 0, 1);
+    } else if (ori == 'h') {
+        model.rotateOnWorldAxis(new THREE.Vector3(0, 1, 0), -0.5*Math.PI);
+        rot_axis = new THREE.Vector3(0, 0, 1);
+    } else if (ori == 'hw') {
+        model.rotateOnWorldAxis(new THREE.Vector3(1, 0, 0), -0.5*Math.PI);
+        rot_axis = new THREE.Vector3(0, 1, 0);
+    } else if (ori == 'hb') {
+        model.rotateOnWorldAxis(new THREE.Vector3(1, 0, 0), 0.5*Math.PI);
+        model.rotateOnWorldAxis(new THREE.Vector3(0, 1, 0), Math.PI);
+        rot_axis = new THREE.Vector3(0, 1, 0);
+    } else if (ref) { // hh ref
+        model.rotateOnWorldAxis(new THREE.Vector3(1, 0, 0), -0.5*Math.PI);
+        model.rotateOnWorldAxis(new THREE.Vector3(0, 0, 1), -0.5*Math.PI);
+        rot_axis = new THREE.Vector3(0, 1, 0);
+    } else { // hh
+        model.rotateOnWorldAxis(new THREE.Vector3(1, 0, 0), -0.5*Math.PI);
+        model.rotateOnWorldAxis(new THREE.Vector3(0, 0, 1), 0.5*Math.PI);
+        rot_axis = new THREE.Vector3(0, 1, 0);
+    }
+    model.rotateOnWorldAxis(rot_axis, -rot*0.25*Math.PI);
+}
+
+function set_hand_shape() {
+    //const finger = hand.getObjectByName('M1');
+    //finger.setRotationFromAxisAngle(new THREE.Vector3(0, 0, -1), Math.PI/2);
 }
