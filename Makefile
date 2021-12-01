@@ -1,7 +1,8 @@
 OUT:=dist
 SRC:=frontend
 
-ESBUILD_OPTS:=--inject:$(SRC)/preact-shim.js --jsx-factory=h --jsx-fragment=Fragment 
+ESB_OPTS:=--bundle --format=esm --minify
+JSX_OPTS:=--inject:$(SRC)/preact-shim.js --jsx-factory=h --jsx-fragment=Fragment 
 ENV:=
 TW_OPTS:=
 
@@ -11,7 +12,7 @@ ENV+=NODE_ENV=production
 TW_OPTS+=--minify
 endif
 
-TARGETS:=$(addprefix $(OUT)/, index.html index.js style.css)
+TARGETS:=$(addprefix $(OUT)/, index.html index.js hand.js style.css)
 IMAGES:=$(patsubst $(SRC)/img/%, $(OUT)/img/%, $(wildcard $(SRC)/img/*))
 
 all: $(TARGETS) $(IMAGES)
@@ -23,7 +24,10 @@ $(OUT)/img/%: $(SRC)/img/% | $(OUT)/img
 	cp $< $@
 
 $(OUT)/index.js: $(SRC)/index.jsx $(wildcard $(SRC)/*.jsx) | $(OUT)
-	$(ENV) esbuild $< --bundle $(ESBUILD_OPTS) --outfile=$@
+	$(ENV) esbuild $< $(ESB_OPTS) $(JSX_OPTS) --outfile=$@
+
+$(OUT)/hand.js: $(SRC)/hand.js | $(OUT)
+	$(ENV) esbuild $< $(ESB_OPTS) --outfile=$@
 
 $(OUT)/style.css: $(SRC)/style.css $(SRC)/tailwind.config.cjs | $(OUT)
 	$(ENV) tailwindcss -i $< -c $(SRC)/tailwind.config.cjs -o $@ $(TW_OPTS)

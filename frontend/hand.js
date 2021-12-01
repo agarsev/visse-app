@@ -23,7 +23,6 @@ function init_scene(canvas) {
 
     const loader = new GLTFLoader();
     loader.load('img/mano.glb', gltf => {
-        console.log(gltf);
         const hand = gltf.scene;
         hand.scale.set(HAND_SCALE, HAND_SCALE, HAND_SCALE);
         hand.rotation.y = -Math.PI/2;

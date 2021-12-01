@@ -8,7 +8,9 @@
 import { render } from 'preact';
 import { useReducer, useRef, useEffect } from 'preact/hooks';
 
-import { set_hand } from './hand';
+const BACKEND_URL = 'http://localhost:8000/';
+const HAND_MODULE = './hand.js';
+let set_hand = null;
 
 const INITIAL_STATE = {
     // Navigation and UI
@@ -50,6 +52,7 @@ const reducer = (state, action) => {
         };
     case 'set_current_expl':
         return { ...state, 
+            screen: 'sign',
             currentExpl: action.currentExpl,
             hideCircle: false,
         };
@@ -62,13 +65,11 @@ const reducer = (state, action) => {
     case 'set_loading':
         return { ...state, isLoading: true, };
     case 'show_3d':
-        return { ...state, screen: '3d', };
+        return { ...state, screen: '3d', isLoading: false, };
     default:
         return state;
     }
 }
-
-const BACKEND_URL = 'http://localhost:8000/';
 
 function is_wide () { return document.documentElement.clientWidth > 768; }
 
@@ -99,6 +100,17 @@ export default function App() {
         dispatch({ action: 'backend_response', ...res, image });
     }
 
+    async function show_3d () {
+        if (set_hand !== null) {
+            dispatch({ action: 'show_3d' });
+        } else {
+            dispatch({ action: 'set_loading' });
+            const module = await import(HAND_MODULE);
+            set_hand = module.set_hand;
+            dispatch({ action: 'show_3d' });
+        }
+    }
+
     let screen;
     if (state.screen === 'initial') {
         screen = <InitialScreen get_example={get_example} />;
@@ -116,7 +128,7 @@ export default function App() {
             currentExpl={currentExpl} dispatch={dispatch} />}
         <FileBar wide={state.screen === 'initial'}
             is_hand={explanations[currentExpl]?.is_hand}
-            show_3d={() => dispatch({ action: 'show_3d' })}
+            show_3d={show_3d}
             choose={choose} showhelp={() => dispatch({ action: 'show_help' })} />
         {state.helpVisible && <HelpPage hidehelp={() => dispatch({ action: 'hide_help' })} />}
     </>;
