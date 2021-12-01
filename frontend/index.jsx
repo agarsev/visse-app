@@ -8,7 +8,7 @@
 import { render } from 'preact';
 import { useReducer, useRef, useEffect } from 'preact/hooks';
 
-const BACKEND_URL = 'http://localhost:8000/';
+const BACKEND_URL = process.env.NODE_ENV=='production'?'backend/':'http://localhost:8000/';
 const HAND_MODULE = './hand.js';
 let threed = null; // Lazy load
 
@@ -160,19 +160,23 @@ function InitialScreen ({ get_example }) {
     </div>;
 }
 
+function Loading () {
+    return <g transform={`translate(50,50)`}>
+        <g class="animate-spin">
+            <circle cx="0" cy="0" r="30" fill="none" stroke="currentColor"
+                stroke-width="6" opacity="0.5" />
+            <path d="M30,0 A30,30 0 0 0 0,-30" fill="none" stroke="currentColor"
+                stroke-width="6" />
+        </g>
+    </g>;
+}
+
 function SignWindow ({ image, size, explanations, currentExpl, hideCircle, isLoading, dispatch }) {
     const { left, top, width, height } = currentExpl != null ?
         explanations[currentExpl] : {};
     let overlay = '';
     if (isLoading) {
-        overlay = <g transform={`translate(50,50)`}>
-            <g class="animate-spin">
-                <circle cx="0" cy="0" r="30" fill="none" stroke="currentColor"
-                    stroke-width="6" opacity="0.5" />
-                <path d="M30,0 A30,30 0 0 0 0,-30" fill="none" stroke="currentColor"
-                    stroke-width="6" />
-            </g>
-        </g>;
+        overlay = Loading();
     } else {
         overlay = <>
             {currentExpl != null && !hideCircle ?<circle
@@ -205,7 +209,7 @@ function SignWindow ({ image, size, explanations, currentExpl, hideCircle, isLoa
     </div>;
 }
 
-function ThreeD ({ image, explanations, currentExpl }) {
+function ThreeD ({ isLoading, image, explanations, currentExpl }) {
     const { left, top, width, height } = currentExpl != null ?
         explanations[currentExpl] : {};
     const container = useRef(null);
@@ -223,6 +227,9 @@ function ThreeD ({ image, explanations, currentExpl }) {
         <div class="absolute top-2 left-2 overflow-hidden"
             style={`width: ${width}px; height: ${height}px;
                 background-image: url('${image}'); background-position: -${left}px -${top}px;`} />
+        {isLoading && <svg class="absolute inset-0" viewBox="0 0 100 100">
+            <Loading />
+        </svg>}
     </div>;
 }
 

@@ -10,7 +10,9 @@ PROD:=0
 ifeq ($(PROD), 1)
 ENV+=NODE_ENV=production
 TW_OPTS+=--minify
-ESB_OPTS+=--minify
+ESB_OPTS+=--minify --define:process.env.NODE_ENV=\"production\"
+else
+ESB_OPTS+=--define:process.env.NODE_ENV=\"development\"
 endif
 
 TARGETS:=$(addprefix $(OUT)/, index.html index.js hand.js style.css)
