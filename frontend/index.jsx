@@ -66,6 +66,8 @@ const reducer = (state, action) => {
         return { ...state, isLoading: true, };
     case 'show_3d':
         return { ...state, screen: '3d', isLoading: false, };
+    case 'hide_3d':
+        return { ...state, screen: 'sign', isLoading: false, };
     default:
         return state;
     }
@@ -127,7 +129,8 @@ export default function App() {
             currentExpl={currentExpl} dispatch={dispatch} />}
         <FileBar wide={state.screen === 'initial'}
             is_hand={currentExpl !== null && explanations[currentExpl].hand !== null}
-            show_3d={show_3d}
+            is_3d={state.screen === '3d'} show_3d={show_3d}
+            hide_3d={() => dispatch({ action: 'hide_3d' })}
             choose={choose} showhelp={() => dispatch({ action: 'show_help' })} />
         {state.helpVisible && <HelpPage hidehelp={() => dispatch({ action: 'hide_help' })} />}
     </>;
@@ -295,22 +298,32 @@ function Explanation ({ explanation, current, select }) {
 }
 
 
-function FileBar ({ choose, showhelp, wide, is_hand, show_3d }) {
+function FileBar ({ choose, showhelp, wide, is_hand, is_3d, show_3d, hide_3d }) {
     const div_style = "area-filebar flex py-2 px-6 justify-between items-center"+
         " md:justify-center md:space-x-24 md:py-4 "+
         (wide?"md:expand-wide":"");
     return <div class={div_style}>
-        <Button3D enabled={is_hand} show_3d={show_3d} />
+        <Button3D enabled={is_hand} is_3d={is_3d}
+            show_3d={show_3d} hide_3d={hide_3d} />
         <UploadButton choose={choose} />
         <HelpButton showhelp={showhelp} />
     </div>;
 }
 
-function Button3D ({ enabled, show_3d }) {
-    return enabled?<button onClick={show_3d}
-        class="w-14 h-14 rounded-full p-2 bg-primary-600 text-white text-2xl font-bold">
-        3D</button>
-        :<div class="w-14 h-14 rounded-full bg-secondary-200" />;
+function Button3D ({ enabled, is_3d, show_3d, hide_3d }) {
+    const button_class = "w-12 h-12 rounded-full p-1 text-white text-xl font-bold transition-all " +
+        (enabled?(is_3d?"bg-primary-600":"bg-secondary-600"):"bg-secondary-200 cursor-default");
+    const label_class = "inline-block rounded-full p-1 w-20 border " +
+        (enabled?"border-secondary-600":"border-secondary-200");
+    const change_3d = () => is_3d ? hide_3d() : show_3d();
+    return <label class={label_class} style="margin-right: -1rem;">
+        <input class="hidden" type="checkbox" checked={is_3d}
+            onChange={change_3d} />
+        <button class={button_class}
+            style={`font-size: 1.5rem; margin-left:${is_3d?"1.3rem":"0"}`}
+            onClick={change_3d}>
+            {enabled?"3D":""}</button>
+    </label>;
 }
 
 function UploadButton ({ choose }) {
