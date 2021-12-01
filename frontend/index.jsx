@@ -8,6 +8,8 @@
 import { render } from 'preact';
 import { useReducer, useRef, useEffect } from 'preact/hooks';
 
+import { set_hand } from './hand';
+
 const INITIAL_STATE = {
     // Navigation and UI
     screen: 'initial',
@@ -59,6 +61,8 @@ const reducer = (state, action) => {
         return { ...state, helpVisible: false, };
     case 'set_loading':
         return { ...state, isLoading: true, };
+    case 'show_3d':
+        return { ...state, screen: '3d', };
     default:
         return state;
     }
@@ -71,6 +75,8 @@ function is_wide () { return document.documentElement.clientWidth > 768; }
 export default function App() {
 
     const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+
+    const { currentExpl, explanations } = state;
 
     function choose (file) {
         dispatch({ action: 'set_image', image: file });
@@ -98,15 +104,19 @@ export default function App() {
         screen = <InitialScreen get_example={get_example} />;
     } else if (state.screen === 'sign') {
         screen = <SignWindow dispatch={dispatch} {...state} />;
+    } else if (state.screen === '3d') {
+        screen = <ThreeD {...state} />;
     }
 
     return <>
         <Header />
         {screen}
         {state.screen !== 'initial' && <ExplanationList
-            explanations={state.explanations}
-            currentExpl={state.currentExpl} dispatch={dispatch} />}
+            explanations={explanations}
+            currentExpl={currentExpl} dispatch={dispatch} />}
         <FileBar wide={state.screen === 'initial'}
+            is_hand={explanations[currentExpl]?.is_hand}
+            show_3d={() => dispatch({ action: 'show_3d' })}
             choose={choose} showhelp={() => dispatch({ action: 'show_help' })} />
         {state.helpVisible && <HelpPage hidehelp={() => dispatch({ action: 'hide_help' })} />}
     </>;
@@ -173,6 +183,24 @@ function SignWindow ({ image, size, explanations, currentExpl, hideCircle, isLoa
                 </svg>
             </div>
         </div>
+    </div>;
+}
+
+function ThreeD ({ image, explanations, currentExpl }) {
+    const { left, top, width, height } = currentExpl != null ?
+        explanations[currentExpl] : {};
+    const container = useRef(null);
+    const canvas = useRef(null);
+    useEffect(() => {
+        canvas.current.width = container.current.clientWidth;
+        canvas.current.height = container.current.clientHeight;
+        set_hand(canvas.current, explanations[currentExpl]);
+    }, [currentExpl]);
+    return <div class="area-signwindow relative" ref={container}>
+        <canvas ref={canvas} />
+        <div class="absolute top-2 left-2 overflow-hidden"
+            style={`width: ${width}px; height: ${height}px;
+                background-image: url('${image}'); background-position: -${left}px -${top}px;`} />
     </div>;
 }
 
@@ -253,19 +281,19 @@ function Explanation ({ explanation, current, select }) {
 }
 
 
-function FileBar ({ choose, showhelp, wide }) {
+function FileBar ({ choose, showhelp, wide, is_hand, show_3d }) {
     const div_style = "area-filebar flex py-2 px-6 justify-between items-center"+
         " md:justify-center md:space-x-24 md:py-4 "+
         (wide?"md:expand-wide":"");
     return <div class={div_style}>
-        <Button3D />
+        <Button3D enabled={is_hand} show_3d={show_3d} />
         <UploadButton choose={choose} />
         <HelpButton showhelp={showhelp} />
     </div>;
 }
 
-function Button3D ({ enabled }) {
-    return enabled?<button 
+function Button3D ({ enabled, show_3d }) {
+    return enabled?<button onClick={show_3d}
         class="w-14 h-14 rounded-full p-2 bg-primary-600 text-white text-2xl font-bold">
         3D</button>
         :<div class="w-14 h-14 rounded-full bg-secondary-200" />;

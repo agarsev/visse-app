@@ -30,6 +30,7 @@ class Explanation(BaseModel):
     width: int
     height: int
     text: str
+    is_hand: bool = False
 
 
 class Response(BaseModel):
@@ -55,13 +56,15 @@ def logogram_to_response(logo: Logogram):
         if description is None:
             continue
         cx, cy, w, h = grapheme.box
+        is_hand = grapheme.tags.get('CLASS') == 'HAND'
         response.explanations.append(
             Explanation(
                 left=(cx-w/2)*width,
                 top=(cy-h/2)*height,
                 width=w*width,
                 height=h*height,
-                text=description
+                text=description,
+                is_hand=is_hand
             )
         )
     return response
