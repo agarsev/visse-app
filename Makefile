@@ -1,7 +1,7 @@
 OUT:=dist
 SRC:=frontend
 
-ESB_OPTS:=--bundle --format=esm
+ESB_OPTS:=--bundle --format=esm --target=es2018
 JSX_OPTS:=--inject:$(SRC)/preact-shim.js --jsx-factory=h --jsx-fragment=Fragment 
 ENV:=
 TW_OPTS:=

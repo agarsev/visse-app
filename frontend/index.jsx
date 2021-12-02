@@ -144,7 +144,7 @@ export default function App() {
 function Header () {
     return <header class="area-header py-2 mx-4 border-b-2 border-secondary-400 flex">
         <a href="https://www.ucm.es/visse" class="ml-auto" target="_blank">
-            <img src="img/logo_visse_color.svg" class="h-28"
+            <img src="img/logo_visse_color.png" class="h-28"
                  alt="Logo del proyecto VisSE"
                  title="Visualizando la SignoEscritura" />
         </a>
@@ -227,7 +227,7 @@ function ThreeD ({ isLoading, image, explanations, currentExpl }) {
         <div class="absolute top-2 left-2 overflow-hidden"
             style={`width: ${width}px; height: ${height}px;
                 background-image: url('${image}'); background-position: -${left}px -${top}px;`} />
-        {isLoading && <svg class="absolute inset-0" viewBox="0 0 100 100">
+        {isLoading && <svg class="absolute inset-0" width="100%" height="100%" viewBox="0 0 100 100">
             <Loading />
         </svg>}
     </div>;
@@ -304,7 +304,7 @@ function Explanation ({ explanation, current, select }) {
                 stroke="currentColor" stroke-width="1"
                 fill={current ? "currentColor" : "none"} />
         </svg>
-        <p class="text-primary-900"
+        <p class="text-primary-900 text-lg"
             dangerouslySetInnerHTML={{__html: applyStyle(text) }} />
     </div>
 }

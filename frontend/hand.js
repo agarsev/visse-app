@@ -53,9 +53,7 @@ export function init_scene(canvas) {
 
 
 const BOUNCE_BACK_SPEED = 0.3;
-const CAMERA_ROLL_AMOUNT = 8;
-const MAX_X = 2;
-const MAX_Y = 2;
+const CAMERA_ROLL_AMOUNT = 18;
 
 function MyOrbitControls (camera, canvas) {
 
@@ -72,12 +70,12 @@ function MyOrbitControls (camera, canvas) {
     }
 
     function mouse_move(event) {
-        let x = -CAMERA_ROLL_AMOUNT * (event.clientX - startx) / canvas.width;
-        let y = CAMERA_ROLL_AMOUNT * (event.clientY - starty) / canvas.height;
-        x = x > 0 ? Math.sqrt(x) : -Math.sqrt(-x);
-        y = y > 0 ? Math.sqrt(y) : -Math.sqrt(-y);
-        camera.position.x = x < MAX_X ? (x > -MAX_X ? x : -MAX_X) : MAX_X;
-        camera.position.y = y < MAX_Y ? (y > -MAX_Y ? y : -MAX_Y) : MAX_Y;
+        const ex = event.clientX || event.touches[0].clientX;
+        const ey = event.clientY || event.touches[0].clientY;
+        const x = -CAMERA_ROLL_AMOUNT * (ex - startx) / canvas.width;
+        const y = CAMERA_ROLL_AMOUNT * (ey - starty) / canvas.height;
+        camera.position.x = x > 0 ? Math.sqrt(x) : -Math.sqrt(-x);
+        camera.position.y = y > 0 ? Math.sqrt(y) : -Math.sqrt(-y);
         normalize_camera();
     }
 
