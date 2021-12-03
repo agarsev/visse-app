@@ -41,6 +41,14 @@ export function init_scene(canvas) {
         hand.rotation.y = -Math.PI/2;
         hand.position.set(0, -HAND_SCALE, 0);
         model.add(hand);
+
+        const mixer = new THREE.AnimationMixer(hand);
+        const anim = gltf.animations[0];
+        const close = THREE.AnimationUtils.subclip(anim, "fingers_close", 1, 2);
+        close.tracks = close.tracks.filter(t => t.name.startsWith('M1'));
+        const action = mixer.clipAction(close);
+        action.play();
+        mixer.update();
     });
     
     requestAnimationFrame(function animate() {
