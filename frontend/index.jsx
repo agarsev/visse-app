@@ -330,10 +330,10 @@ function Button3D ({ enabled, is_3d, show_3d, hide_3d }) {
     const change_3d = () => is_3d ? hide_3d() : show_3d();
     return <label class={label_class} style="margin-right: -1rem;">
         <input class="hidden" type="checkbox" checked={is_3d}
-            onChange={change_3d} />
+            onChange={enabled?change_3d:null} />
         <button class={button_class}
             style={`font-size: 1.5rem; margin-left:${is_3d?"1.3rem":"0"}`}
-            onClick={change_3d}>
+            onClick={enabled?change_3d:null}>
             {enabled?"3D":""}</button>
     </label>;
 }
