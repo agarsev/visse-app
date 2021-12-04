@@ -31,26 +31,8 @@ export function init_scene(canvas) {
     renderer.setSize(canvas.width, canvas.height);
     renderer.setClearColor(0xffffff, 1);
 
-    model = new THREE.Object3D();
-    scene.add(model);
+    model = load_hand('img/mano.glb', scene);
 
-    const loader = new GLTFLoader();
-    loader.load('img/mano.glb', gltf => {
-        const hand = gltf.scene;
-        hand.scale.set(HAND_SCALE, HAND_SCALE, HAND_SCALE);
-        hand.rotation.y = -Math.PI/2;
-        hand.position.set(0, -HAND_SCALE, 0);
-        model.add(hand);
-
-        const mixer = new THREE.AnimationMixer(hand);
-        const anim = gltf.animations[0];
-        const close = THREE.AnimationUtils.subclip(anim, "fingers_close", 1, 2);
-        close.tracks = close.tracks.filter(t => t.name.startsWith('M1'));
-        const action = mixer.clipAction(close);
-        action.play();
-        mixer.update();
-    });
-    
     requestAnimationFrame(function animate() {
         requestAnimationFrame(animate);
         controls.update();
@@ -120,46 +102,90 @@ function MyOrbitControls (camera, canvas) {
     return { update }
 }
 
-export function set_hand({ ori, rot, ref, left = false }) {
-    model.scale.set(left?-1:1, 1, 1);
-    set_hand_orientation(ori, rot, ref, left);
+export async function set_hand({ ori, rot, ref, left = false }) {
+    const hand = await model;
+    hand.scale.set(left?-1:1, 1, 1);
+    set_hand_orientation(hand, ori, rot, ref);
     set_hand_shape();
 }
 
-function set_hand_orientation(ori, rot, ref) {
-    model.rotation.set(0, 0, 0);
+function set_hand_orientation(hand, ori, rot, ref) {
+    hand.rotation.set(0, 0, 0);
     let rot_axis;
     if (ori == 'w') {
         rot_axis = new THREE.Vector3(0, 0, 1);
     } else if (ori == 'b') {
-        model.rotateOnWorldAxis(new THREE.Vector3(0, 1, 0), Math.PI);
+        hand.rotateOnWorldAxis(new THREE.Vector3(0, 1, 0), Math.PI);
         rot_axis = new THREE.Vector3(0, 0, 1);
     } else if (ori == 'h' && ref) {
-        model.rotateOnWorldAxis(new THREE.Vector3(0, 1, 0), 0.5*Math.PI);
+        hand.rotateOnWorldAxis(new THREE.Vector3(0, 1, 0), 0.5*Math.PI);
         rot_axis = new THREE.Vector3(0, 0, 1);
     } else if (ori == 'h') {
-        model.rotateOnWorldAxis(new THREE.Vector3(0, 1, 0), -0.5*Math.PI);
+        hand.rotateOnWorldAxis(new THREE.Vector3(0, 1, 0), -0.5*Math.PI);
         rot_axis = new THREE.Vector3(0, 0, 1);
     } else if (ori == 'hw') {
-        model.rotateOnWorldAxis(new THREE.Vector3(1, 0, 0), -0.5*Math.PI);
+        hand.rotateOnWorldAxis(new THREE.Vector3(1, 0, 0), -0.5*Math.PI);
         rot_axis = new THREE.Vector3(0, 1, 0);
     } else if (ori == 'hb') {
-        model.rotateOnWorldAxis(new THREE.Vector3(1, 0, 0), 0.5*Math.PI);
-        model.rotateOnWorldAxis(new THREE.Vector3(0, 1, 0), Math.PI);
+        hand.rotateOnWorldAxis(new THREE.Vector3(1, 0, 0), 0.5*Math.PI);
+        hand.rotateOnWorldAxis(new THREE.Vector3(0, 1, 0), Math.PI);
         rot_axis = new THREE.Vector3(0, 1, 0);
     } else if (ref) { // hh ref
-        model.rotateOnWorldAxis(new THREE.Vector3(1, 0, 0), -0.5*Math.PI);
-        model.rotateOnWorldAxis(new THREE.Vector3(0, 0, 1), -0.5*Math.PI);
+        hand.rotateOnWorldAxis(new THREE.Vector3(1, 0, 0), -0.5*Math.PI);
+        hand.rotateOnWorldAxis(new THREE.Vector3(0, 0, 1), -0.5*Math.PI);
         rot_axis = new THREE.Vector3(0, 1, 0);
     } else { // hh
-        model.rotateOnWorldAxis(new THREE.Vector3(1, 0, 0), -0.5*Math.PI);
-        model.rotateOnWorldAxis(new THREE.Vector3(0, 0, 1), 0.5*Math.PI);
+        hand.rotateOnWorldAxis(new THREE.Vector3(1, 0, 0), -0.5*Math.PI);
+        hand.rotateOnWorldAxis(new THREE.Vector3(0, 0, 1), 0.5*Math.PI);
         rot_axis = new THREE.Vector3(0, 1, 0);
     }
-    model.rotateOnWorldAxis(rot_axis, -rot*0.25*Math.PI);
+    hand.rotateOnWorldAxis(rot_axis, -rot*0.25*Math.PI);
 }
 
+const actions = {}; // Finger actions
+
 function set_hand_shape() {
-    //const finger = hand.getObjectByName('M1');
-    //finger.setRotationFromAxisAngle(new THREE.Vector3(0, 0, -1), Math.PI/2);
+    actions['P'].close.play();
+    actions['I'].ext.play();
+    actions['C'].straight.play();
+    actions['A'].hook.play();
+    actions['M'].close.play();
+    actions.mixer.update();
+}
+
+function load_hand (gltf_model, scene) {
+    const root = new THREE.Object3D();
+    scene.add(root);
+    return new Promise((resolve, reject) => {
+        (new GLTFLoader()).load(gltf_model, gltf => {
+
+            const hand = gltf.scene;
+            hand.scale.set(HAND_SCALE, HAND_SCALE, HAND_SCALE);
+            hand.rotation.y = -Math.PI/2;
+            hand.position.set(0, -HAND_SCALE, 0);
+            root.add(hand);
+
+            const mixer = new THREE.AnimationMixer(hand);
+            const anim = gltf.animations[0];
+
+            function extract_clip (f, name, kf) {
+                const clip = THREE.AnimationUtils.subclip(anim, `${f}_${name}`, kf, kf+1);
+                clip.tracks = clip.tracks.filter(t => t.name.startsWith(f));
+                return clip;
+            }
+
+            ['P', 'I', 'C', 'A', 'M'].forEach(f => {
+                actions[f] = {
+                    ext: mixer.clipAction(extract_clip(f, 'e', 0)),
+                    close: mixer.clipAction(extract_clip(f, 'c', 2)),
+                    hook: mixer.clipAction(extract_clip(f, 'h', 3)),
+                    straight: mixer.clipAction(extract_clip(f, 's', 5)),
+                };
+            });
+
+            actions.mixer = mixer;
+
+            resolve(root);
+        });
+    });
 }
