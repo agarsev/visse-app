@@ -102,11 +102,11 @@ function MyOrbitControls (camera, canvas) {
     return { update }
 }
 
-export async function set_hand({ ori, rot, ref, left = false }) {
+export async function set_hand({ ori, rot, ref, fingers, left = false }) {
     const hand = await model;
     hand.scale.set(left?-1:1, 1, 1);
     set_hand_orientation(hand, ori, rot, ref);
-    set_hand_shape();
+    set_hand_shape(fingers);
 }
 
 function set_hand_orientation(hand, ori, rot, ref) {
@@ -143,13 +143,26 @@ function set_hand_orientation(hand, ori, rot, ref) {
 }
 
 const actions = {}; // Finger actions
+const action_map = {
+    'E': 'ext',
+    'E-': 'ext_join',
+    '': 'curve',
+    '-': 'curve_join',
+    '+': 'curve_pin',
+    'r': 'straight',
+    'r+': 'straight_pin',
+    'g': 'hook',
+    'g+': 'hook_pin',
+    'c': 'close',
+}
 
-function set_hand_shape() {
-    actions['P'].close.play();
-    actions['I'].ext.play();
-    actions['C'].straight.play();
-    actions['A'].hook.play();
-    actions['M'].close.play();
+function set_hand_shape([ P, I, C, A, M ]) {
+    //actions['P'][action_map[P]].play();
+    actions.mixer.stopAllAction();
+    actions['I'][action_map[I]].reset().play();
+    actions['C'][action_map[C]].reset().play();
+    actions['A'][action_map[A]].reset().play();
+    actions['M'][action_map[M]].reset().play();
     actions.mixer.update();
 }
 
@@ -169,7 +182,7 @@ function load_hand (gltf_model, scene) {
             const anim = gltf.animations[0];
 
             function extract_clip (f, name, kf) {
-                const clip = THREE.AnimationUtils.subclip(anim, `${f}_${name}`, kf, kf+1);
+                const clip = THREE.AnimationUtils.subclip(anim, `${f}_${name}`, kf, kf+1, 1);
                 clip.tracks = clip.tracks.filter(t => t.name.startsWith(f));
                 return clip;
             }
@@ -177,9 +190,15 @@ function load_hand (gltf_model, scene) {
             ['P', 'I', 'C', 'A', 'M'].forEach(f => {
                 actions[f] = {
                     ext: mixer.clipAction(extract_clip(f, 'e', 0)),
-                    close: mixer.clipAction(extract_clip(f, 'c', 2)),
-                    hook: mixer.clipAction(extract_clip(f, 'h', 3)),
+                    ext_join: mixer.clipAction(extract_clip(f, 'e', 1)),
+                    curve: mixer.clipAction(extract_clip(f, 'c', 2)),
+                    curve_join: mixer.clipAction(extract_clip(f, 'c', 3)),
+                    curve_pin: mixer.clipAction(extract_clip(f, 'c', 4)),
                     straight: mixer.clipAction(extract_clip(f, 's', 5)),
+                    straight_pin: mixer.clipAction(extract_clip(f, 's', 6)),
+                    hook: mixer.clipAction(extract_clip(f, 'h', 7)),
+                    hook_pin: mixer.clipAction(extract_clip(f, 'h', 8)),
+                    close: mixer.clipAction(extract_clip(f, 'c', 9)),
                 };
             });
 

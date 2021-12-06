@@ -93,16 +93,18 @@ def get_description(tags):
 
 
 def hand_description(sh, var, rot, ref):
-    shape = hand_shape(sh)
+    shape, finger_params = hand_shape(sh)
     ori = hand_orientation(var, rot, ref)
     if shape is None or ori is None:
         return None
-    return '{} {}'.format(shape, ori)
+    return '{} {}'.format(shape, ori), finger_params
 
 
 fixed_hands = {
-    'picam++': 'El puño cerrado.',
-    'TE': 'La mano como en la "T" del dactilológico.',
+    'picam++': ('El puño cerrado.',
+                ['c', 'c', 'c', 'c', 'c']),
+    'TE': ('La mano como en la "T" del dactilológico.',
+           ['E-', 'r', 'E', 'E', 'E']),
 }
 hand_regex = re.compile(r'([picamPICAM]+)([rg]?)([+-]?)(O?)')
 
@@ -113,12 +115,17 @@ def hand_shape(sh):
 
     r = hand_regex.search(sh)
     if r is None:
-        return None
+        print(f'WARNING: unknown hand shape: {sh}')
+        return None, None
 
     fingers = r.group(1)
     flex_mode = r.group(2)
     contact = r.group(3)
     others = r.group(4) == 'O'
+
+    # Flex mode for each finger for the 3D model
+    finger_params = ['E' if others else 'c'
+                     for _ in ['P', 'I', 'C', 'A', 'M']]
 
     # Fingers
     fingers_list = []
@@ -131,23 +138,31 @@ def hand_shape(sh):
     if fingers.find('I') >= 0:
         fingers_list.append('índice')
         ext_flag = True
+        finger_params[1] = 'E' + contact
     elif fingers.find('i') >= 0:
         fingers_list.append('índice')
+        finger_params[1] = flex_mode + contact
     if fingers.find('C') >= 0:
         fingers_list.append('corazón')
         ext_flag = True
+        finger_params[2] = 'E' + contact
     elif fingers.find('c') >= 0:
         fingers_list.append('corazón')
+        finger_params[2] = flex_mode + contact
     if fingers.find('A') >= 0:
         fingers_list.append('anular')
         ext_flag = True
+        finger_params[3] = 'E' + contact
     elif fingers.find('a') >= 0:
         fingers_list.append('anular')
+        finger_params[3] = flex_mode + contact
     if fingers.find('M') >= 0:
         fingers_list.append('meñique')
         ext_flag = True
+        finger_params[4] = 'E' + contact
     elif fingers.find('m') >= 0:
         fingers_list.append('meñique')
+        finger_params[4] = flex_mode + contact
 
     if len(fingers_list) == 5:
         text = 'Los dedos'
@@ -187,7 +202,7 @@ def hand_shape(sh):
     else:
         text += '.'
 
-    return text
+    return text, finger_params
 
 
 all_angles = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
@@ -245,5 +260,6 @@ def hand_orientation(var, rot, ref):
         dist = hor_angles[rot]
         palm = hor_angles[rotate(rot, 2)]
     else:
+        print(f'WARNING: Unknown orientation {var} {rot} {ref}')
         return None
     return f'La mano hacia {dist}, con la palma mirando hacia {palm}.'

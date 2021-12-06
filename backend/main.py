@@ -26,6 +26,7 @@ class HandExplanation(BaseModel):
     ori: str
     rot: int
     ref: bool
+    fingers: list[str]
 
 
 class Explanation(BaseModel):
@@ -61,8 +62,17 @@ def logogram_to_response(logo: Logogram):
     )
     for grapheme in sort2D(logo.graphemes):
         description = get_description(grapheme.tags)
+        hand = None
         if description is None:
             continue
+        if grapheme.tags.get('CLASS') == 'HAND':
+            description, finger_params = description
+            hand = HandExplanation(
+                ori=grapheme.tags['VAR'],
+                rot=all_angles.index(grapheme.tags['ROT']),
+                ref=grapheme.tags['REF'] == 'y',
+                fingers=finger_params
+            )
         cx, cy, w, h = grapheme.box
         expl = Explanation(
             left=(cx-w/2)*width,
@@ -70,13 +80,8 @@ def logogram_to_response(logo: Logogram):
             width=w*width,
             height=h*height,
             text=description,
+            hand=hand
         )
-        if grapheme.tags.get('CLASS') == 'HAND':
-            expl.hand = HandExplanation(
-                ori=grapheme.tags['VAR'],
-                rot=all_angles.index(grapheme.tags['ROT']),
-                ref=grapheme.tags['REF'] == 'y',
-            )
         response.explanations.append(expl)
     return response
 
