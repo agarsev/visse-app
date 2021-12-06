@@ -1,6 +1,10 @@
-* NEXT
+* DONE MVP
+  CLOSED: [2021-12-06 Mon 20:09]
 
-First make it work in general.
+** DONE Make it work
+   CLOSED: [2021-12-06 Mon 20:09]
+
+First make it work in general, the basics.
 
 ** DONE Sort graphemes geographically
    CLOSED: [2021-12-01 Wed 23:54]
@@ -9,6 +13,8 @@ First make it work in general.
    CLOSED: [2021-11-29 Mon 15:47]
 
 When choosing an image, while waiting for the backend.
+
+* TODO Next
 
 ** TODO Error management
 
@@ -27,3 +33,11 @@ grapheme, etc.
 ** TODO Video
 
 Vídeo explicativo en LSE, quizá previo a la initial screen
+
+** TODO Improve 3D model
+
+Especially thumb base
+
+** TODO Fix thumb texts
+
+Textual descriptions when thumb ext is different than finger ext are wrong, fix.

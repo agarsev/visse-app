@@ -157,8 +157,8 @@ const action_map = {
 }
 
 function set_hand_shape([ P, I, C, A, M ]) {
-    //actions['P'][action_map[P]].play();
     actions.mixer.stopAllAction();
+    actions['P'][action_map[P]].play();
     actions['I'][action_map[I]].reset().play();
     actions['C'][action_map[C]].reset().play();
     actions['A'][action_map[A]].reset().play();

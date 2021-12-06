@@ -130,11 +130,15 @@ def hand_shape(sh):
     # Fingers
     fingers_list = []
     ext_flag = False
+    thumb_ext = False
     if fingers.find('P') >= 0:
         fingers_list.append('pulgar')
-        ext_flag = True
+        thumb_ext = True
+        finger_params[0] = 'E' + contact
     elif fingers.find('p') >= 0:
         fingers_list.append('pulgar')
+        finger_params[0] = flex_mode + contact
+
     if fingers.find('I') >= 0:
         fingers_list.append('índice')
         ext_flag = True
