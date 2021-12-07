@@ -17,7 +17,7 @@ from quevedo import Dataset, Logogram
 from .descriptions import get_description, all_angles
 
 
-CORPUS_PATH = Path(__file__).parent.parent.parent / 'corpus'
+CORPUS_PATH = Path(__file__).resolve().parent.parent.parent / 'corpus'
 PIPELINE_NAME = 'p_full'
 
 
