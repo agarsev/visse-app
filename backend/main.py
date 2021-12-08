@@ -10,9 +10,11 @@ from io import BytesIO
 from fastapi import FastAPI, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from functools import cmp_to_key
+import logging
 from pathlib import Path
 from pydantic import BaseModel
 from quevedo import Dataset, Logogram
+import time
 
 from .descriptions import get_description, all_angles
 
@@ -124,13 +126,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+formatter = logging.Formatter('[%(levelname)s] %(name)s: %(message)s')
+ch.setFormatter(formatter)
+logger.addHandler(ch)
+
 
 @app.post("/recognize", response_model=Response)
 def recognize(image: bytes = File(...)):
     '''Recognize the SignWriting found in an image, and return explanations for
     the different symbols found.'''
+    logger.info('Start /recognize')
     logo = Logogram(image=BytesIO(image))
+    start_time = time.time()
     pipeline.run(logo)
+    logger.info('Done /recognize in {:.2f} seconds ({:d} graphemes)'.format(
+        time.time() - start_time, len(logo.graphemes)))
     return logogram_to_response(logo)
 
 

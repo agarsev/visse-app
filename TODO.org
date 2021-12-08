@@ -16,7 +16,8 @@ When choosing an image, while waiting for the backend.
 
 * TODO Next
 
-** TODO Logging
+** DONE Logging
+   CLOSED: [2021-12-08 Wed 22:20]
 
 ** TODO Error management
 
