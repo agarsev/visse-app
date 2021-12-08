@@ -31,7 +31,7 @@ export function init_scene(canvas) {
     renderer.setSize(canvas.width, canvas.height);
     renderer.setClearColor(0xffffff, 1);
 
-    model = load_hand('img/mano.glb', scene);
+    model = load_hand('assets/mano.glb', scene);
 
     requestAnimationFrame(function animate() {
         requestAnimationFrame(animate);

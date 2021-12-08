@@ -144,7 +144,7 @@ export default function App() {
 function Header () {
     return <header class="area-header py-2 mx-4 border-b-2 border-secondary-400 flex">
         <a href="https://www.ucm.es/visse" class="ml-auto" target="_blank">
-            <img src="img/logo_visse_color.png" class="h-28"
+            <img src="assets/logo_visse_color.png" class="h-28"
                  alt="Logo del proyecto VisSE"
                  title="Visualizando la SignoEscritura" />
         </a>
