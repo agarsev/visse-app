@@ -16,6 +16,8 @@ When choosing an image, while waiting for the backend.
 
 * TODO Next
 
+** TODO Logging
+
 ** TODO Error management
 
 - [ ] Backend
@@ -23,21 +25,18 @@ When choosing an image, while waiting for the backend.
 
 ** TODO Prerender
 
-** TODO Touch gesture scroll
-
 ** TODO Navigation
 
 Some state changes should be able to navigate back, eg. show help, change
 grapheme, etc.
 
-** TODO Video
-
-Vídeo explicativo en LSE, quizá previo a la initial screen
-
-** TODO Improve 3D model
-
-Especially thumb base
-
 ** TODO Fix thumb texts
 
 Textual descriptions when thumb ext is different than finger ext are wrong, fix.
+
+* Backlog
+
+** PWA Improvements
+
+*** Share target
+*** Service worker

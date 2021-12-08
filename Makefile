@@ -17,9 +17,9 @@ else
 ESB_OPTS+=--define:process.env.NODE_ENV=\"development\"
 endif
 
-TARGETS:=$(addprefix $(OUT)/, index.html index.js hand.js style.css)
+TARGETS:=$(addprefix $(OUT)/, index.html index.js hand.js style.css manifest.json)
 
-ASSET_SOURCES:=$(wildcard $(ASSET_DIR)/*.png) $(wildcard $(ASSET_DIR)/*.glb)
+ASSET_SOURCES:=$(foreach EXT, png svg glb, $(wildcard $(ASSET_DIR)/*.$(EXT)))
 ASSETS:=$(patsubst $(ASSET_DIR)/%, $(OUT_ASSETS)/%, $(ASSET_SOURCES))
 
 ALL:=$(TARGETS) $(ASSETS)
@@ -37,6 +37,9 @@ $(OUT)/hand.js: $(SRC)/hand.js | $(OUT)
 
 $(OUT)/style.css: $(SRC)/style.css $(SRC)/tailwind.config.cjs | $(OUT)
 	$(ENV) tailwindcss -i $< -c $(SRC)/tailwind.config.cjs -o $@ $(TW_OPTS)
+
+$(OUT)/manifest.json: $(SRC)/manifest.json | $(OUT)
+	cp $< $@
 
 $(OUT_ASSETS)/%: $(ASSET_DIR)/% | $(OUT_ASSETS)
 	cp $< $@
