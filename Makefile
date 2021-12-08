@@ -1,7 +1,8 @@
 SRC:=frontend
 ASSET_DIR:=$(SRC)/assets
-OUT:=dist
-OUT_ASSETS:=$(OUT)/assets
+OUT_DIR:=dist
+OUT:=$(OUT_DIR)
+OUT_ASSETS=$(OUT)/assets
 
 ESB_OPTS:=--bundle --format=esm --target=es2018
 JSX_OPTS:=--inject:$(SRC)/preact-shim.js --jsx-factory=h --jsx-fragment=Fragment 
@@ -10,10 +11,12 @@ TW_OPTS:=
 
 PROD:=0
 ifeq ($(PROD), 1)
+OUT:=$(OUT)/production
 ENV+=NODE_ENV=production
 TW_OPTS+=--minify
 ESB_OPTS+=--minify --define:process.env.NODE_ENV=\"production\"
 else
+OUT:=$(OUT)/dev
 ESB_OPTS+=--define:process.env.NODE_ENV=\"development\"
 endif
 
@@ -48,7 +51,7 @@ $(OUT) $(OUT_ASSETS):
 	mkdir -p $@
 
 clean:
-	rm -rf $(OUT)
+	rm -rf $(OUT_DIR)
 
 serve: $(ALL)
 	@live-server --cors --no-css-inject --wait=200 $(OUT) &

@@ -26,6 +26,9 @@ const INITIAL_STATE = {
     hideCircle: false,
 }
 
+// no analytics in development
+window.umami = window.umami || (() => {});
+
 const reducer = (state, action) => {
     switch (action.action) {
     case 'set_image':
@@ -64,6 +67,7 @@ const reducer = (state, action) => {
     case 'hide_circle':
         return { ...state, hideCircle: true, };
     case 'show_help':
+        umami('Show help');
         return { ...state, helpVisible: true, };
     case 'hide_help':
         return { ...state, helpVisible: false, };
@@ -87,6 +91,7 @@ export default function App() {
     const { currentExpl, explanations } = state;
 
     function choose (file) {
+        umami('Upload image');
         dispatch({ action: 'set_image', image: file });
         const body = new FormData();
         body.append('image', file);
@@ -96,6 +101,7 @@ export default function App() {
     }
 
     async function get_example () {
+        umami('See example');
         dispatch({ action: 'set_loading' });
         const { number } = await (fetch(BACKEND_URL+'examples/number')
             .then(res => res.json()));
@@ -108,6 +114,7 @@ export default function App() {
     }
 
     async function show_3d () {
+        umami('See 3D');
         if (threed !== null) {
             dispatch({ action: 'show_3d' });
         } else {
