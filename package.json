@@ -1,5 +1,17 @@
 {
+  "name": "visse-frontend",
+  "version": "1.0.0-alpha",
+  "description": "VisSE App Frontend",
+  "homepage": "https://www.ucm.es/visse",
+  "license": "OSL-3.0",
   "type": "module",
+  "author":  "Antonio F. G. Sevilla <afgs@ucm.es> (https://garciasevilla.com)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agarsev/visse-app"
+  },
+  "private": true,
+  "files": ["dist/production/*"],
   "dependencies": {
     "@tailwindcss/typography": "^0.4.1",
     "esbuild": "^0.13.15",

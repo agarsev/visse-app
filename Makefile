@@ -9,7 +9,7 @@ JSX_OPTS:=--inject:$(SRC)/preact-shim.js --jsx-factory=h --jsx-fragment=Fragment
 ENV:=
 TW_OPTS:=
 
-PROD:=0
+PROD?=0
 ifeq ($(PROD), 1)
 OUT:=$(OUT)/production
 ENV+=NODE_ENV=production
@@ -58,7 +58,12 @@ serve: $(ALL)
 	poetry run uvicorn backend.main:app --reload &
 	wait
 
+build:
+	make PROD=1 clean all
+	poetry build -f wheel
+	npm pack --pack-destination dist
+
 
 .ONESHELL:
 
-.PHONY: clean serve
+.PHONY: clean serve build

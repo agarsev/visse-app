@@ -3,9 +3,9 @@
 # VisSE App
 
 The [VisSE project](https://www.ucm.es/visse) aims to develop tools that ease
-the use and understanding of [SignWriting]() in the digital world. SignWriting
-is a system for visually transcribing sign languages into a 2D page, i.e.
-a writing system for sign languages.
+the use and understanding of [SignWriting](https://signwriting.org/) in the
+digital world. SignWriting is a system for visually transcribing sign languages
+into a 2D page, i.e. a writing system for sign languages.
 
 This webapp is an application of the research and development of the project,
 putting the different components together into a user-facing component. The user

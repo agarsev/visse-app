@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "visse-backend"
+description = "VisSE App Backend"
+version = "1.0.0-alpha"
+authors = ["Antonio F. G. Sevilla <afgs@ucm.es>"]
+license = "OSL-3.0"
+readme = "README.md"
+homepage = "https://www.ucm.es/visse"
+repository = "https://github.com/agarsev/visse-app"
+
+[[tool.poetry.packages]]
+include = "backend"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+quevedo = "^1"
+uvicorn = "^0.15.0"
+fastapi = "^0.70.0"
+python-multipart = "^0.0.5"
+
+[tool.poetry.dev-dependencies]
+quevedo = {path = "../quevedo", develop = true}
