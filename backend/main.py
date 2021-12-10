@@ -115,7 +115,8 @@ def sort2D(graphemes):
 ds = Dataset(CORPUS_PATH)
 pipeline = ds.get_pipeline(PIPELINE_NAME)
 examples = [prepare_example(subset, i) for (subset, i) in
-            (('A1_T1', '7'), ('A1_T1', '14'), ('A1_T1', '16'))]
+            (('A1_T1', '9'), ('A1_T1', '16'), ('A1_T1', '60'), ('A1_T1', '8'),
+             ('A1_T1', '80'), ('A1_T1', '176'))]
 
 app = FastAPI(
     root_path=os.environ.get('WEB_ROOT_PATH', '')+'/backend',

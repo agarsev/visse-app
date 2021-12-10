@@ -130,10 +130,8 @@ def hand_shape(sh):
     # Fingers
     fingers_list = []
     ext_flag = False
-    thumb_ext = False
     if fingers.find('P') >= 0:
         fingers_list.append('pulgar')
-        thumb_ext = True
         finger_params[0] = 'E' + contact
     elif fingers.find('p') >= 0:
         fingers_list.append('pulgar')
@@ -146,6 +144,7 @@ def hand_shape(sh):
     elif fingers.find('i') >= 0:
         fingers_list.append('índice')
         finger_params[1] = flex_mode + contact
+
     if fingers.find('C') >= 0:
         fingers_list.append('corazón')
         ext_flag = True
@@ -153,6 +152,11 @@ def hand_shape(sh):
     elif fingers.find('c') >= 0:
         fingers_list.append('corazón')
         finger_params[2] = flex_mode + contact
+
+    if finger_params[1] in ('E', '') and finger_params[2] == 'c':
+        # no middle finger but index, default "together" position
+        finger_params[1] += '-'
+
     if fingers.find('A') >= 0:
         fingers_list.append('anular')
         ext_flag = True
