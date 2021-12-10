@@ -60,6 +60,12 @@ const reducer = (state, action) => {
                 isLoading: false,
             };
         }
+    case 'error_response':
+        //console.error(action.err);
+        return { ...state,
+            recognitionError: true,
+            isLoading: false,
+        };
     case 'set_current_expl':
         let screen;
         if (!state.explanations[action.currentExpl].hand) {
@@ -105,8 +111,9 @@ export default function App() {
         const body = new FormData();
         body.append('image', file);
         fetch(BACKEND_URL+'recognize', { method: 'POST', body })
-        .then(res => res.json())
+        .then(res => res.ok?res.json():Promise.reject(res))
         .then(res => dispatch({ action: 'backend_response', ...res }))
+        .catch(err => dispatch({ action: 'error_response', err }));
     }
 
     async function get_example () {

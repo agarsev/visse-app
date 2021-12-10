@@ -143,7 +143,11 @@ def recognize(image: bytes = File(...)):
     '''Recognize the SignWriting found in an image, and return explanations for
     the different symbols found.'''
     logger.info('Start /recognize')
-    logo = Logogram(image=BytesIO(image))
+    try:
+        logo = Logogram(image=BytesIO(image))
+    except OSError:
+        raise HTTPException(status_code=400, detail='Invalid image')
+
     start_time = time.time()
     pipeline.run(logo)
     logger.info('Done /recognize in {:.2f} seconds ({:d} graphemes)'.format(
