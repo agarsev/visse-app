@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "visse-backend"
 description = "VisSE App Backend"
-version = "1.0.0-alpha"
+version = "1.0.0-alpha.1"
 authors = ["Antonio F. G. Sevilla <afgs@ucm.es>"]
 license = "OSL-3.0"
 readme = "README.md"
