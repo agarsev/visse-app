@@ -37,6 +37,9 @@
     @responsive {
 
         .expand-wide { grid-column: 1 / 3; }
+        .mw-almost { max-width: calc(100vw - 2rem); }
+        .mh-60vh { max-height: 60vh; }
+        .mh-50vh { max-height: 50vh; }
 
         .off-to-right {
             @apply top-0 bottom-0;

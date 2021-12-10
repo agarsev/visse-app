@@ -40,19 +40,26 @@ const reducer = (state, action) => {
             isLoading: true,
         };
     case 'backend_response':
-        let image = state.image;
-        if (action.image) {
-            if (state.image) URL.revokeObjectURL(state.image);
-            image = URL.createObjectURL(action.image);
+        if (action.explanations.length > 0) {
+            let image = state.image;
+            if (action.image) {
+                if (state.image) URL.revokeObjectURL(state.image);
+                image = URL.createObjectURL(action.image);
+            }
+            return { ...state, image,
+                screen: 'sign',
+                size: [action.width, action.height],
+                explanations: action.explanations,
+                currentExpl: 0,
+                hideCircle: false,
+                isLoading: false,
+            };
+        } else {
+            return { ...state,
+                recognitionError: true,
+                isLoading: false,
+            };
         }
-        return { ...state, image,
-            screen: 'sign',
-            size: [action.width, action.height],
-            explanations: action.explanations,
-            currentExpl: 0,
-            hideCircle: false,
-            isLoading: false,
-        };
     case 'set_current_expl':
         let screen;
         if (!state.explanations[action.currentExpl].hand) {
@@ -73,6 +80,8 @@ const reducer = (state, action) => {
         return { ...state, helpVisible: false, };
     case 'set_loading':
         return { ...state, isLoading: true, };
+    case 'set_loaded':
+        return { ...state, isLoading: false, };
     case 'show_3d':
         return { ...state, screen: '3d', isLoading: false, };
     case 'hide_3d':
@@ -130,15 +139,23 @@ export default function App() {
     } else if (state.screen === 'sign') {
         screen = <SignWindow dispatch={dispatch} {...state} />;
     } else if (state.screen === '3d') {
-        screen = <ThreeD {...state} />;
+        screen = <ThreeD {...state} loaded={() => dispatch({ action: 'set_loaded' })} />;
+    }
+
+    let content;
+    if (state.recognitionError) {
+        content= <RecognitionError />;
+    } else if (state.screen !== 'initial') {
+        content= <ExplanationList
+            explanations={explanations}
+            currentExpl={currentExpl} dispatch={dispatch}
+        />;
     }
 
     return <>
         <Header />
         {screen}
-        {state.screen !== 'initial' && <ExplanationList
-            explanations={explanations}
-            currentExpl={currentExpl} dispatch={dispatch} />}
+        {content}
         <FileBar wide={state.screen === 'initial'}
             is_hand={currentExpl !== null && explanations[currentExpl].hand !== null}
             is_3d={state.screen === '3d'} show_3d={show_3d}
@@ -205,7 +222,7 @@ function SignWindow ({ image, size, explanations, currentExpl, hideCircle, isLoa
     return <div class="flex area-signwindow"
         onClick={() => dispatch({ action: 'hide_circle' })}>
         <div class="inline-block m-auto relative">
-            <img src={image} />
+            <img class="mw-almost mh-50vh md:mw-full md:mh-60vh" src={image} />
             <div class="absolute w-full h-full top-0 left-0">
                 <svg width="100%" height="100%" class="text-primary-400"
                     viewBox={`0 0 ${size[0] || 100} ${size[1] || 100}`}>
@@ -216,15 +233,16 @@ function SignWindow ({ image, size, explanations, currentExpl, hideCircle, isLoa
     </div>;
 }
 
-function ThreeD ({ isLoading, image, explanations, currentExpl }) {
+function ThreeD ({ isLoading, image, explanations, currentExpl, loaded }) {
     const { left, top, width, height } = currentExpl != null ?
         explanations[currentExpl] : {};
     const container = useRef(null);
     const canvas = useRef(null);
-    useEffect(() => {
+    useEffect(async () => {
         canvas.current.width = container.current.clientWidth;
         canvas.current.height = container.current.clientHeight;
-        threed.init_scene(canvas.current);
+        await threed.init_scene(canvas.current);
+        loaded();
     }, []);
     useEffect(() => {
         threed.set_hand(explanations[currentExpl].hand);
@@ -390,6 +408,14 @@ function HelpPage ({ hidehelp }) {
                 <a href="https://www.ucm.es/visse" target="_blank">Saber más</a>
             </p>
         </div>
+    </div>;
+}
+
+function RecognitionError () {
+    return <div class="flex w-full h-full p-8">
+        <p class="prose prose-xl m-auto text-center">
+        ¡Lo sentimos! El sistema no ha podido reconocer la imagen. 🙁
+        </p>
     </div>;
 }
 

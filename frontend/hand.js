@@ -14,7 +14,7 @@ const CAMERA_DISTANCE = 4;
 
 let model = null;
 
-export function init_scene(canvas) {
+export async function init_scene(canvas) {
     const scene = new THREE.Scene();
 
     const camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 1, 1000);
@@ -39,6 +39,7 @@ export function init_scene(canvas) {
         renderer.render(scene, camera);
     });
 
+    await model;
 }
 
 
