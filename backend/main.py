@@ -11,6 +11,7 @@ from fastapi import FastAPI, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from functools import cmp_to_key
 import logging
+import os
 from pathlib import Path
 from pydantic import BaseModel
 from quevedo import Dataset, Logogram
@@ -18,8 +19,7 @@ import time
 
 from .descriptions import get_description, all_angles
 
-
-CORPUS_PATH = Path(__file__).resolve().parent.parent.parent / 'corpus'
+CORPUS_PATH = os.environ.get('CORPUS_PATH', Path(__file__).resolve().parent.parent.parent / 'corpus')
 PIPELINE_NAME = 'p_full'
 
 
@@ -117,7 +117,9 @@ pipeline = ds.get_pipeline(PIPELINE_NAME)
 examples = [prepare_example(subset, i) for (subset, i) in
             (('A1_T1', '7'), ('A1_T1', '14'), ('A1_T1', '16'))]
 
-app = FastAPI()
+app = FastAPI(
+    root_path=os.environ.get('WEB_ROOT_PATH', '')+'/backend',
+)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=['*'],
@@ -160,3 +162,11 @@ def example(index: int):
     if index < 0 or index >= len(examples):
         raise HTTPException(status_code=404)
     return examples[index]
+
+
+def run():
+    '''Run the server with uvicorn.'''
+    import uvicorn
+    port = int(os.environ.get('PORT', 8000))
+    host = os.environ.get('HOST', 'localhost')
+    uvicorn.run(app, host=host, port=port)

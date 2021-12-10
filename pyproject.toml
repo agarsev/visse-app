@@ -8,6 +8,9 @@ readme = "README.md"
 homepage = "https://www.ucm.es/visse"
 repository = "https://github.com/agarsev/visse-app"
 
+[tool.poetry.scripts]
+visse-backend = 'backend.main:run'
+
 [[tool.poetry.packages]]
 include = "backend"
 
