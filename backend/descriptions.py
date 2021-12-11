@@ -103,8 +103,14 @@ def hand_description(sh, var, rot, ref):
 fixed_hands = {
     'picam++': ('El puño cerrado.',
                 ['c', 'c', 'c', 'c', 'c']),
-    'TE': ('La mano como en la "T" del dactilológico.',
-           ['E-', 'r', 'E', 'E', 'E']),
+    'pir-O': ('El índice recto, con el pulgar pegado. El resto de dedos estirados',
+              ['f', 'f', 'f', 'f', 'f']),
+    'TE': ('El índice y el pulgar cruzados, el resto de dedos estirados.',
+           ['t', 't', 't', 't', 't']),
+    'CI': ('Los dedos índice y corazón cruzados.',
+           ['x', 'x', 'x', 'x', 'x']),
+    'pi-O': ('La punta del índice tocando la falange del pulgar, el resto de dedos extendidos.',
+             ['s', 's', 's', 's', 's']),
 }
 hand_regex = re.compile(r'([picamPICAM]+)([rg]?)([+-]?)(O?)')
 

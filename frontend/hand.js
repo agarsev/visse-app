@@ -189,6 +189,10 @@ function load_hand (gltf_model, scene) {
                     'g': mixer.clipAction(extract_clip(f, 'g', 7)),
                     'g+': mixer.clipAction(extract_clip(f, 'g+', 8)),
                     'c': mixer.clipAction(extract_clip(f, '++', 9)),
+                    'x': mixer.clipAction(extract_clip(f, 'x', 10)),
+                    's': mixer.clipAction(extract_clip(f, 's', 11)),
+                    't': mixer.clipAction(extract_clip(f, 's', 12)),
+                    'f': mixer.clipAction(extract_clip(f, 'f', 13)),
                 };
             });
 

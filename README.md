@@ -15,18 +15,12 @@ the hands.
 
 - A demo can be seen here: [https://holstein.fdi.ucm.es/visse](https://holstein.fdi.ucm.es/visse)
 
-## Research
+This application is part of a wider meta-repository containing the other
+components and more information about the underlying research:
 
-Underlying the functionality of this app is an expert system, described here.
-(TODO add publication). Some of the components are also available publicly:
-
-- [Quevedo](https://github.com/agarsev/quevedo) is the machine learning and
-    dataset organization component that makes the expert system possible.
-- The annotated data collected by our research and used for the descriptive
-    schema of SignWriting and training the algorithms is here (TODO publish).
+- [https://github.com/agarsev/visse](https://github.com/agarsev/visse)
 
 ## Acknowledgements
-
 
 This app is part of the project "Visualizando la SignoEscritura" (Visualizing
 SignWriting), reference number PR2014_19/01, developed in the Faculty of
@@ -37,12 +31,12 @@ application to the development of accessible technologies.
 We want to acknowledge the collaboration of the signing community, especially
 the Spanish Sign Language teachers at Idiomas Complutense and Fundación CNSE.
 
-## License
+### License
 
 The VisSE web app is licensed under the [Open Software License version
 3.0](https://opensource.org/licenses/OSL-3.0).
 
-## Team
+### Team
 
 - [Antonio F. G. Sevilla](https://github.com/agarsev) <afgs@ucm.es>
 - [Alberto Díaz Esteban](https://www.ucm.es/directorio?id=20069)
