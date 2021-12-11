@@ -38,6 +38,7 @@
 
         .expand-wide { grid-column: 1 / 3; }
         .mw-almost { max-width: calc(100vw - 2rem); }
+        .mw-50vw { max-width: 50vw; }
         .mh-60vh { max-height: 60vh; }
         .mh-50vh { max-height: 50vh; }
 

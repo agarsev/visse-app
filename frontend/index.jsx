@@ -214,6 +214,7 @@ function SignWindow ({ image, size, explanations, currentExpl, hideCircle, isLoa
                 cx={left + width/2} cy={top + height/2}
                 r={0.05*size[0] + Math.max(width, height) / 2}
                 fill="none" stroke="currentColor" stroke-width="2"
+                vector-effect="non-scaling-stroke"
             />: null}
             {explanations?.map((g, i) => <rect x={g.left} y={g.top}
                 onClick={e => {
@@ -229,7 +230,7 @@ function SignWindow ({ image, size, explanations, currentExpl, hideCircle, isLoa
     return <div class="flex area-signwindow"
         onClick={() => dispatch({ action: 'hide_circle' })}>
         <div class="inline-block m-auto relative">
-            <img class="mw-almost mh-50vh md:mw-full md:mh-60vh" src={image} />
+            <img class="mw-almost md:mw-50vw mh-50vh md:mw-full md:mh-60vh" src={image} />
             <div class="absolute w-full h-full top-0 left-0">
                 <svg width="100%" height="100%" class="text-primary-400"
                     viewBox={`0 0 ${size[0] || 100} ${size[1] || 100}`}>
@@ -240,9 +241,14 @@ function SignWindow ({ image, size, explanations, currentExpl, hideCircle, isLoa
     </div>;
 }
 
-function ThreeD ({ isLoading, image, explanations, currentExpl, loaded }) {
+function ThreeD ({ isLoading, image, size, explanations, currentExpl, loaded }) {
     const { left, top, width, height } = currentExpl != null ?
         explanations[currentExpl] : {};
+    const rem_pixels = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    const mini_x_scale = width / (10 * rem_pixels);
+    const mini_y_scale = height / (8 * rem_pixels);
+    const scale = Math.max(mini_x_scale, mini_y_scale);
+
     const container = useRef(null);
     const canvas = useRef(null);
     useEffect(async () => {
@@ -257,8 +263,11 @@ function ThreeD ({ isLoading, image, explanations, currentExpl, loaded }) {
     return <div class="area-signwindow relative" ref={container}>
         <canvas ref={canvas} />
         <div class="absolute top-2 left-2 overflow-hidden"
-            style={`width: ${width}px; height: ${height}px;
-                background-image: url('${image}'); background-position: -${left}px -${top}px;`} />
+            style={`width: ${width/scale}px; height: ${height/scale}px;
+                background-image: url('${image}');
+                background-position: -${left/scale}px -${top/scale}px;
+                background-size: ${size[0]/scale}px ${size[1]/scale}px;
+            `} />
         {isLoading && <svg class="absolute inset-0" width="100%" height="100%" viewBox="0 0 100 100">
             <Loading />
         </svg>}
