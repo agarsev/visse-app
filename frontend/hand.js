@@ -11,7 +11,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 const HAND_SCALE = 0.5;
 const CAMERA_DISTANCE = 4;
-const CAMERA_HEIGHT = 1.5;
+const CAMERA_HEIGHT = 0.75;
 
 let model = null;
 
@@ -34,7 +34,7 @@ export async function init_scene(canvas) {
     renderer.setSize(canvas.width, canvas.height);
     renderer.setClearColor(0xffffff, 1);
 
-    model = load_hand('assets/mano.glb');
+    if (!model) model = load_hand('assets/mano.glb');
 
     requestAnimationFrame(function animate() {
         requestAnimationFrame(animate);

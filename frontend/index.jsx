@@ -261,7 +261,7 @@ function ThreeD ({ isLoading, image, size, explanations, currentExpl, loaded }) 
         threed.set_hand(explanations[currentExpl].hand);
     }, [currentExpl]);
     return <div class="area-signwindow relative" ref={container}>
-        <canvas ref={canvas} />
+        <canvas ref={canvas} class="cursor-pointer" />
         <div class="absolute top-2 left-2 overflow-hidden"
             style={`width: ${width/scale}px; height: ${height/scale}px;
                 background-image: url('${image}');
