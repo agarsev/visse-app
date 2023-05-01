@@ -13,12 +13,12 @@ can see the different symbols contained in a SignWriting transcription, their
 meaning, and 3D representation of the orientation and finger configuration of
 the hands.
 
-- A demo can be seen here: [https://holstein.fdi.ucm.es/visse](https://holstein.fdi.ucm.es/visse)
+- A demo can be seen here: <https://garciasevilla.com/visse>
 
 This application is part of a wider meta-repository containing the other
 components and more information about the underlying research:
 
-- [https://github.com/agarsev/visse](https://github.com/agarsev/visse)
+- <https://github.com/agarsev/visse>
 
 ## Acknowledgements
 
