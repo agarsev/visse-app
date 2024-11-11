@@ -152,7 +152,7 @@ def recognize(image: bytes = File(...)):
     pipeline.run(logo)
     logger.info('Done /recognize in {:.2f} seconds ({:d} graphemes)'.format(
         time.time() - start_time, len(logo.graphemes)))
-    return logogram_to_response(logo)
+    return logo
 
 
 @app.get("/examples/number", response_model=NumberExamples)
