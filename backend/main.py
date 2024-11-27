@@ -154,7 +154,7 @@ def recognize(image: bytes = File(...)):
         time.time() - start_time, len(logo.graphemes)))
     return logogram_to_response(logo)
 
-@app.post("/recognize/tfg-2425-signos", response_model=Response)
+@app.post("/recognize/raw", response_model=Response)
 def recognize_tfg_signos(image: bytes = File(...)):
     '''Recognize the SignWriting found in an image, and return the JSON for
     the different symbols found.'''
