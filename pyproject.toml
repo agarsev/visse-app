@@ -1,25 +1,33 @@
-[tool.poetry]
+[project]
 name = "visse-backend"
 description = "VisSE App Backend"
-version = "1.0.0"
-authors = ["Antonio F. G. Sevilla <afgs@ucm.es>"]
-license = "OSL-3.0"
+version = "1.1.0"
+authors = [
+    { name = "Antonio F. G. Sevilla", email = "afgs@ucm.es" }
+]
+license = {text = "OSL-3.0"}
 readme = "README.md"
-homepage = "https://www.ucm.es/visse"
-repository = "https://github.com/agarsev/visse-app"
+requires-python = "~=3.9.0"
+dependencies = [
+    "quevedo~=1.2.0",
+    "uvicorn~=0.15.0",
+    "fastapi~=0.70.0",
+    "python-multipart~=0.0.5",
+]
 
-[tool.poetry.scripts]
+[project.urls]
+Homepage = "https://www.ucm.es/visse"
+Repository = "https://github.com/agarsev/visse-app"
+
+[project.scripts]
 visse-backend = 'backend.main:run'
 
-[[tool.poetry.packages]]
-include = "backend"
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.poetry.dependencies]
-python = "^3.9"
-quevedo = "^1"
-uvicorn = "^0.15.0"
-fastapi = "^0.70.0"
-python-multipart = "^0.0.5"
+[tool.hatch.build.targets.wheel]
+packages = ["backend"]
 
-[tool.poetry.dev-dependencies]
-quevedo = {path = "../quevedo", develop = true}
+[tool.hatch.build.targets.sdist]
+packages = ["backend"]

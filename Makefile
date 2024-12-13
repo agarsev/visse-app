@@ -55,14 +55,17 @@ clean:
 
 serve: $(ALL)
 	@live-server --cors --no-css-inject --wait=200 $(OUT) &
-	poetry run uvicorn backend.main:app --reload &
+	uv run uvicorn backend.main:app --reload &
 	wait
 
 build:
 	make PROD=1 clean all
-	poetry build -f wheel
+	uv build
 	npm pack --pack-destination dist
 
+containers:
+	podman build -t visse:gpu --build-arg-file=assets/container.gpu.conf .
+	podman build -t visse:cpu --build-arg-file=assets/container.cpu.conf .
 
 .ONESHELL:
 

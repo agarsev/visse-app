@@ -1,0 +1,50 @@
+diff --git a/Makefile b/Makefile
+index 5635f8f..ab1d1a8 100644
+--- a/Makefile
++++ b/Makefile
+@@ -4,7 +4,7 @@
+-OPENCV=0
++OPENCV=1
+ AVX=0
+-OPENMP=0
+-LIBSO=0
++OPENMP=1
++LIBSO=1
+ ZED_CAMERA=0
+ ZED_CAMERA_v2_8=0
+ 
+diff --git a/include/darknet.h b/include/darknet.h
+index 892ad71..ac4e043 100644
+--- a/include/darknet.h
++++ b/include/darknet.h
+@@ -16,6 +16,9 @@
+ #include <assert.h>
+ #include <pthread.h>
+ 
++#define printf(...)
++#define fprintf(...)
++
+ #ifndef LIB_API
+ #ifdef LIB_EXPORTS
+ #if defined(_MSC_VER)
+diff --git a/src/http_stream.cpp b/src/http_stream.cpp
+index c8e9b5e..b0fa6e4 100644
+--- a/src/http_stream.cpp
++++ b/src/http_stream.cpp
+@@ -446,6 +446,7 @@ public:
+ 
+         std::vector<uchar> outbuf;
+         std::vector<int> params;
++        std::ostream cerr(0);
+         params.push_back(IMWRITE_JPEG_QUALITY);
+         params.push_back(quality);
+         cv::imencode(".jpg", frame, outbuf, params);  //REMOVED FOR COMPATIBILITY
+@@ -537,7 +538,7 @@ void send_mjpeg(mat_cv* mat, int port, int timeout, int quality)
+         static MJPG_sender wri(port, timeout, quality);
+         //cv::Mat mat = cv::cvarrToMat(ipl);
+         wri.write(*(cv::Mat*)mat);
+-        std::cout << " MJPEG-stream sent. \n";
++        //std::cout << " MJPEG-stream sent. \n";
+     }
+     catch (...) {
+         cerr << " Error in send_mjpeg() function \n";
