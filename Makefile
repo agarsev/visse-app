@@ -63,9 +63,18 @@ build:
 	uv build
 	npm pack --pack-destination dist
 
-containers:
-	podman build -t visse:gpu --build-arg-file=assets/container.gpu.conf .
-	podman build -t visse:cpu --build-arg-file=assets/container.cpu.conf .
+containers: container.gpu container.cpu
+	podman tag ghcr.io/agarsev/visse:cpu ghcr.io/agarsev/visse:latest
+
+container.%: Containerfile
+	podman build --build-arg-file=assets/container.$*.conf \
+		-t ghcr.io/agarsev/visse:$* \
+		--annotation="org.opencontainers.image.authors=Antonio F. G. Sevilla <afgs@ucm.es>" \
+		--annotation="org.opencontainers.image.source=https://github.com/agarsev/visse-app" \
+		--annotation="org.opencontainers.image.description=Visualizing SignWriting web app backend ($*)" \
+		--annotation="org.opencontainers.image.licenses=OSL-3.0" \
+		.
+
 
 .ONESHELL:
 
