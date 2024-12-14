@@ -73,6 +73,12 @@ container.%: Containerfile
 		--annotation="org.opencontainers.image.licenses=OSL-3.0" \
 		-t visse:$* .
 
+run.cpu: container.cpu
+	podman run -p 3999:8000 -it --replace --name visse visse:cpu
+
+run.gpu: container.gpu
+	podman run -p 3999:8000 --device nvidia.com/gpu=all -it --replace --name visse visse:gpu
+
 
 .ONESHELL:
 

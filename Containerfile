@@ -47,11 +47,11 @@ RUN --mount=type=cache,target=/root/.npm \
     --mount=type=bind,source=package.json,target=package.json \
     npm clean-install
 
-ADD frontend frontend
+COPY frontend frontend
 
 ENV PATH="./node_modules/.bin:$PATH"
 RUN --mount=type=bind,source=Makefile,target=Makefile \
-    make PROD=1
+    make PROD=1 1>/dev/null
 
 
 # FINAL IMAGE
@@ -76,15 +76,15 @@ COPY --from=ghcr.io/astral-sh/uv:0.5.8 /uv /uvx /bin/
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --frozen --no-install-project --no-dev
+    uv sync -q --frozen --no-install-project --no-dev
 
 #    uv: project itself
-ADD backend backend
+COPY backend backend
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     --mount=type=bind,source=README.md,target=README.md \
-    uv sync --frozen --no-editable --no-dev
+    uv sync -q --frozen --no-dev
 
 WORKDIR /
 

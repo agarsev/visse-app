@@ -19,12 +19,15 @@ import time
 
 from .descriptions import get_description, all_angles
 
-CORPUS_PATH = os.environ.get('CORPUS_PATH', Path(__file__).resolve().parent.parent.parent / 'corpus')
-PIPELINE_NAME = 'p_full'
+CORPUS_PATH = os.environ.get(
+    "CORPUS_PATH", Path(__file__).resolve().parent.parent.parent / "corpus"
+)
+PIPELINE_NAME = "p_full"
 
 
 class HandExplanation(BaseModel):
-    '''Hand data for the 3D model.'''
+    """Hand data for the 3D model."""
+
     ori: str
     rot: int
     ref: bool
@@ -32,10 +35,11 @@ class HandExplanation(BaseModel):
 
 
 class Explanation(BaseModel):
-    '''A single element of a SignWriting image to be explained.
+    """A single element of a SignWriting image to be explained.
 
     It contains the coordinates of the approximate bounding box, as well as
-    the text of the explanation.'''
+    the text of the explanation."""
+
     left: int
     top: int
     width: int
@@ -57,32 +61,28 @@ class NumberExamples(BaseModel):
 
 def logogram_to_response(logo: Logogram):
     width, height = logo.image.size
-    response = Response(
-        width=width,
-        height=height,
-        explanations=[]
-    )
+    response = Response(width=width, height=height, explanations=[])
     for grapheme in sort2D(logo.graphemes):
         description = get_description(grapheme.tags)
         hand = None
         if description is None:
             continue
-        if grapheme.tags.get('CLASS') == 'HAND':
+        if grapheme.tags.get("CLASS") == "HAND":
             description, finger_params = description
             hand = HandExplanation(
-                ori=grapheme.tags['VAR'],
-                rot=all_angles.index(grapheme.tags['ROT']),
-                ref=grapheme.tags['REF'] == 'y',
-                fingers=finger_params
+                ori=grapheme.tags["VAR"],
+                rot=all_angles.index(grapheme.tags["ROT"]),
+                ref=grapheme.tags["REF"] == "y",
+                fingers=finger_params,
             )
         cx, cy, w, h = grapheme.box
         expl = Explanation(
-            left=(cx-w/2)*width,
-            top=(cy-h/2)*height,
-            width=w*width,
-            height=h*height,
+            left=(cx - w / 2) * width,
+            top=(cy - h / 2) * height,
+            width=w * width,
+            height=h * height,
             text=description,
-            hand=hand
+            hand=hand,
         )
         response.explanations.append(expl)
     return response
@@ -92,38 +92,46 @@ def prepare_example(subset, index):
     logo = ds.get_single(Logogram.target, subset, index)
     res = logogram_to_response(logo)
     buff = BytesIO()
-    logo.image.save(buff, format='PNG')
-    res.image = base64.b64encode(buff.getvalue()).decode('ascii')
+    logo.image.save(buff, format="PNG")
+    res.image = base64.b64encode(buff.getvalue()).decode("ascii")
     return res
 
 
 def box_compare(a, b):
-    '''Compare two bounding boxes to order them in 2D.'''
-    xdist = (a.box[0]+a.box[2]/2) - (b.box[0]+b.box[2]/2)
-    ydist = (a.box[1]+a.box[3]/2) - (b.box[1]+b.box[3]/2)
+    """Compare two bounding boxes to order them in 2D."""
+    xdist = (a.box[0] + a.box[2] / 2) - (b.box[0] + b.box[2] / 2)
+    ydist = (a.box[1] + a.box[3] / 2) - (b.box[1] + b.box[3] / 2)
     if abs(xdist) < 0.1:
         return ydist
-    return 10*xdist
+    return 10 * xdist
 
 
 def sort2D(graphemes):
-    '''Sort a list of graphemes by rough x-coordinate, and then by
-    y-coordinate.'''
+    """Sort a list of graphemes by rough x-coordinate, and then by
+    y-coordinate."""
     return sorted(graphemes, key=cmp_to_key(box_compare))
 
 
 ds = Dataset(CORPUS_PATH)
 pipeline = ds.get_pipeline(PIPELINE_NAME)
-examples = [prepare_example(subset, i) for (subset, i) in
-            (('A1_T1', '9'), ('A1_T1', '16'), ('A1_T1', '60'), ('A1_T1', '8'),
-             ('A1_T1', '80'), ('A1_T1', '176'))]
+examples = [
+    prepare_example(subset, i)
+    for (subset, i) in (
+        ("A1_T1", "9"),
+        ("A1_T1", "16"),
+        ("A1_T1", "60"),
+        ("A1_T1", "8"),
+        ("A1_T1", "80"),
+        ("A1_T1", "176"),
+    )
+]
 
 app = FastAPI(
-    root_path=os.environ.get('WEB_ROOT_PATH', '')+'/backend',
+    root_path=os.environ.get("WEB_ROOT_PATH", "") + "/backend",
 )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['*'],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -133,56 +141,61 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 ch = logging.StreamHandler()
 ch.setLevel(logging.INFO)
-formatter = logging.Formatter('[%(levelname)s] %(name)s: %(message)s')
+formatter = logging.Formatter("[%(levelname)s] %(name)s: %(message)s")
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
 
 @app.post("/recognize", response_model=Response)
 def recognize(image: bytes = File(...)):
-    '''Recognize the SignWriting found in an image, and return explanations for
-    the different symbols found.'''
-    logger.info('Start /recognize')
+    """Recognize the SignWriting found in an image, and return explanations for
+    the different symbols found."""
+    logger.info("Start /recognize")
     try:
         logo = Logogram(image=BytesIO(image))
     except OSError:
-        raise HTTPException(status_code=400, detail='Invalid image')
+        raise HTTPException(status_code=400, detail="Invalid image")
 
     start_time = time.time()
     pipeline.run(logo)
-    logger.info('Done /recognize in {:.2f} seconds ({:d} graphemes)'.format(
-        time.time() - start_time, len(logo.graphemes)))
+    logger.info(
+        "Done /recognize in {:.2f} seconds ({:d} graphemes)".format(
+            time.time() - start_time, len(logo.graphemes)
+        )
+    )
     return logogram_to_response(logo)
+
 
 @app.post("/recognize/raw", response_model=Response)
 def recognize_tfg_signos(image: bytes = File(...)):
-    '''Recognize the SignWriting found in an image, and return the JSON for
-    the different symbols found.'''
-    logger.info('Start /recognize/tfg-2425-signos')
+    """Recognize the SignWriting found in an image, and return the JSON for
+    the different symbols found."""
+    logger.info("Start /recognize")
     try:
         logo = Logogram(image=BytesIO(image))
     except OSError:
-        raise HTTPException(status_code=400, detail='Invalid image')
+        raise HTTPException(status_code=400, detail="Invalid image")
     return logo
 
 
 @app.get("/examples/number", response_model=NumberExamples)
 def examples_length():
-    '''Return the number of examples available.'''
+    """Return the number of examples available."""
     return NumberExamples(number=len(examples))
 
 
 @app.get("/examples/{index}", response_model=Response)
 def example(index: int):
-    '''Return an example SignWriting image with its explanations.'''
+    """Return an example SignWriting image with its explanations."""
     if index < 0 or index >= len(examples):
         raise HTTPException(status_code=404)
     return examples[index]
 
 
 def run():
-    '''Run the server with uvicorn.'''
+    """Run the server with uvicorn."""
     import uvicorn
-    port = int(os.environ.get('PORT', 8000))
-    host = os.environ.get('HOST', 'localhost')
+
+    port = int(os.environ.get("PORT", 8000))
+    host = os.environ.get("HOST", "localhost")
     uvicorn.run(app, host=host, port=port)
