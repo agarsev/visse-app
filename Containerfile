@@ -36,6 +36,24 @@ RUN cd /darknet && \
     make -sj
 
 
+# BUILD FRONTEND
+
+FROM docker.io/library/node:23 AS build_frontend
+
+WORKDIR /app
+
+RUN --mount=type=cache,target=/root/.npm \
+    --mount=type=bind,source=package-lock.json,target=package-lock.json \
+    --mount=type=bind,source=package.json,target=package.json \
+    npm clean-install
+
+ADD frontend frontend
+
+ENV PATH="./node_modules/.bin:$PATH"
+RUN --mount=type=bind,source=Makefile,target=Makefile \
+    make PROD=1
+
+
 # FINAL IMAGE
 
 FROM base
@@ -45,6 +63,7 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 RUN wget --no-check-certificate -qO- https://github.com/agarsev/visse/releases/download/v1.0.0/visse-corpus-1.0.0.tgz | tar xz
 
 COPY --from=build_darknet /darknet/darknet /darknet/libdarknet.so /corpus/darknet/
+COPY --from=build_frontend /app/dist/production /frontend
 
 WORKDIR /backend
 
@@ -60,9 +79,12 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-install-project --no-dev
 
 #    uv: project itself
-ADD --exclude=.venv . /backend
+ADD backend backend
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-dev
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    --mount=type=bind,source=README.md,target=README.md \
+    uv sync --frozen --no-editable --no-dev
 
 WORKDIR /
 
