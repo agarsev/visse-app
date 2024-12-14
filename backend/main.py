@@ -154,6 +154,17 @@ def recognize(image: bytes = File(...)):
         time.time() - start_time, len(logo.graphemes)))
     return logogram_to_response(logo)
 
+@app.post("/recognize/raw", response_model=Response)
+def recognize_tfg_signos(image: bytes = File(...)):
+    '''Recognize the SignWriting found in an image, and return the JSON for
+    the different symbols found.'''
+    logger.info('Start /recognize/tfg-2425-signos')
+    try:
+        logo = Logogram(image=BytesIO(image))
+    except OSError:
+        raise HTTPException(status_code=400, detail='Invalid image')
+    return logo
+
 
 @app.get("/examples/number", response_model=NumberExamples)
 def examples_length():
