@@ -59,6 +59,10 @@ class NumberExamples(BaseModel):
     number: int
 
 
+class RawResponse(BaseModel):
+    graphemes: list[Explanation]
+
+
 def logogram_to_response(logo: Logogram):
     width, height = logo.image.size
     response = Response(width=width, height=height, explanations=[])
@@ -86,6 +90,14 @@ def logogram_to_response(logo: Logogram):
         )
         response.explanations.append(expl)
     return response
+
+
+def logogram_raw_to_response(logo: Logogram):
+    graphemes = []
+    for grapheme in sort2D(logo.graphemes):
+        elem = {'tags': grapheme.tags, 'box': grapheme.box}
+        graphemes.append(elem)
+    return graphemes
 
 
 def prepare_example(subset, index):
@@ -166,16 +178,25 @@ def recognize(image: bytes = File(...)):
     return logogram_to_response(logo)
 
 
-@app.post("/recognize/raw", response_model=Response)
+@app.post("/raw")
 def recognize_tfg_signos(image: bytes = File(...)):
     """Recognize the SignWriting found in an image, and return the JSON for
     the different symbols found."""
-    logger.info("Start /recognize")
+    logger.info("Start /raw")
     try:
         logo = Logogram(image=BytesIO(image))
     except OSError:
         raise HTTPException(status_code=400, detail="Invalid image")
-    return logo
+
+    start_time = time.time()
+    pipeline.run(logo)
+    logger.info(
+        "Done /recognize in {:.2f} seconds ({:d} graphemes)".format(
+            time.time() - start_time, len(logo.graphemes)
+        )
+    )
+
+    return logogram_raw_to_response(logo)
 
 
 @app.get("/examples/number", response_model=NumberExamples)
