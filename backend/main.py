@@ -178,11 +178,11 @@ def recognize(image: bytes = File(...)):
     return logogram_to_response(logo)
 
 
-@app.post("/raw")
+@app.post("/recognize/raw")
 def recognize_tfg_signos(image: bytes = File(...)):
     """Recognize the SignWriting found in an image, and return the JSON for
     the different symbols found."""
-    logger.info("Start /raw")
+    logger.info("Start /recognize/raw")
     try:
         logo = Logogram(image=BytesIO(image))
     except OSError:
