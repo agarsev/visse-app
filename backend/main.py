@@ -9,6 +9,7 @@ import base64
 from io import BytesIO
 from fastapi import FastAPI, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from functools import cmp_to_key
 import logging
 import os
@@ -179,7 +180,7 @@ def recognize(image: bytes = File(...)):
 
 
 @app.post("/recognize/raw")
-def recognize_tfg_signos(image: bytes = File(...)):
+def recognize_raw(image: bytes = File(...)):
     """Recognize the SignWriting found in an image, and return the JSON for
     the different symbols found."""
     logger.info("Start /recognize/raw")
@@ -195,8 +196,7 @@ def recognize_tfg_signos(image: bytes = File(...)):
             time.time() - start_time, len(logo.graphemes)
         )
     )
-
-    return logogram_raw_to_response(logo)
+    return JSONResponse(content=logo.to_dict())
 
 
 @app.get("/examples/number", response_model=NumberExamples)
