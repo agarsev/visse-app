@@ -6,19 +6,20 @@
 # it, with textual descriptions of the different symbols contained.
 
 import base64
+import logging
+import os
+import time
+from functools import cmp_to_key
 from io import BytesIO
+from pathlib import Path
+
 from fastapi import FastAPI, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from functools import cmp_to_key
-import logging
-import os
-from pathlib import Path
 from pydantic import BaseModel
 from quevedo import Dataset, Logogram
-import time
 
-from .descriptions import get_description, all_angles
+from .descriptions import all_angles, get_description
 
 CORPUS_PATH = os.environ.get(
     "CORPUS_PATH", Path(__file__).resolve().parent.parent.parent / "corpus"
@@ -60,10 +61,6 @@ class NumberExamples(BaseModel):
     number: int
 
 
-class RawResponse(BaseModel):
-    graphemes: list[Explanation]
-
-
 def logogram_to_response(logo: Logogram):
     width, height = logo.image.size
     response = Response(width=width, height=height, explanations=[])
@@ -91,14 +88,6 @@ def logogram_to_response(logo: Logogram):
         )
         response.explanations.append(expl)
     return response
-
-
-def logogram_raw_to_response(logo: Logogram):
-    graphemes = []
-    for grapheme in sort2D(logo.graphemes):
-        elem = {'tags': grapheme.tags, 'box': grapheme.box}
-        graphemes.append(elem)
-    return graphemes
 
 
 def prepare_example(subset, index):
