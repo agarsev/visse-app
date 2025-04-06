@@ -90,6 +90,14 @@ def logogram_to_response(logo: Logogram):
     return response
 
 
+def logogram_raw_to_response(logo: Logogram):
+    graphemes = []
+    for grapheme in sort2D(logo.graphemes):
+        elem = {'tags': grapheme.tags, 'description': get_description(grapheme.tags), 'box': grapheme.box}
+        graphemes.append(elem)
+    return graphemes
+
+
 def prepare_example(subset, index):
     logo = ds.get_single(Logogram.target, subset, index)
     res = logogram_to_response(logo)
@@ -185,7 +193,7 @@ def recognize_raw(image: bytes = File(...)):
             time.time() - start_time, len(logo.graphemes)
         )
     )
-    return JSONResponse(content=logo.to_dict())
+    return JSONResponse(content=logogram_raw_to_response(logo))
 
 
 @app.get("/examples/number", response_model=NumberExamples)
