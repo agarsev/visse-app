@@ -15,7 +15,6 @@ from pathlib import Path
 
 from fastapi import FastAPI, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from quevedo import Dataset, Logogram
 
@@ -55,15 +54,18 @@ class Response(BaseModel):
     width: int
     height: int
     explanations: list[Explanation]
+    raw_tags: list[dict] = None
 
 
 class NumberExamples(BaseModel):
     number: int
 
 
-def logogram_to_response(logo: Logogram):
+def logogram_to_response(logo: Logogram, raw_tags: bool = False):
     width, height = logo.image.size
     response = Response(width=width, height=height, explanations=[])
+    if raw_tags:
+        response.raw_tags = []
     for grapheme in sort2D(logo.graphemes):
         description = get_description(grapheme.tags)
         hand = None
@@ -87,15 +89,9 @@ def logogram_to_response(logo: Logogram):
             hand=hand,
         )
         response.explanations.append(expl)
+        if raw_tags:
+            response.raw_tags.append(grapheme.tags)
     return response
-
-
-def logogram_raw_to_response(logo: Logogram):
-    graphemes = []
-    for grapheme in sort2D(logo.graphemes):
-        elem = {'tags': grapheme.tags, 'description': get_description(grapheme.tags), 'box': grapheme.box}
-        graphemes.append(elem)
-    return graphemes
 
 
 def prepare_example(subset, index):
@@ -157,9 +153,10 @@ logger.addHandler(ch)
 
 
 @app.post("/recognize", response_model=Response)
-def recognize(image: bytes = File(...)):
+def recognize(image: bytes = File(...), raw: bool = False):
     """Recognize the SignWriting found in an image, and return explanations for
-    the different symbols found."""
+    the different symbols found. Can also return the raw tags as detected by the
+    AI algorithm."""
     logger.info("Start /recognize")
     try:
         logo = Logogram(image=BytesIO(image))
@@ -173,27 +170,7 @@ def recognize(image: bytes = File(...)):
             time.time() - start_time, len(logo.graphemes)
         )
     )
-    return logogram_to_response(logo)
-
-
-@app.post("/recognize/raw")
-def recognize_raw(image: bytes = File(...)):
-    """Recognize the SignWriting found in an image, and return the JSON for
-    the different symbols found."""
-    logger.info("Start /recognize/raw")
-    try:
-        logo = Logogram(image=BytesIO(image))
-    except OSError:
-        raise HTTPException(status_code=400, detail="Invalid image")
-
-    start_time = time.time()
-    pipeline.run(logo)
-    logger.info(
-        "Done /recognize in {:.2f} seconds ({:d} graphemes)".format(
-            time.time() - start_time, len(logo.graphemes)
-        )
-    )
-    return JSONResponse(content=logogram_raw_to_response(logo))
+    return logogram_to_response(logo, raw_tags=raw)
 
 
 @app.get("/examples/number", response_model=NumberExamples)
