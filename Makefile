@@ -1,3 +1,4 @@
+VERSION:=$(shell grep version pyproject.toml | cut -d \" -f 2)
 SRC:=frontend
 ASSET_DIR:=$(SRC)/assets
 OUT_DIR:=dist
@@ -71,13 +72,13 @@ container.%: Containerfile
 		--annotation="org.opencontainers.image.source=https://github.com/agarsev/visse-app" \
 		--annotation="org.opencontainers.image.description=Visualizing SignWriting web app backend ($*)" \
 		--annotation="org.opencontainers.image.licenses=OSL-3.0" \
-		-t visse:$* .
+		-t visse:$(VERSION)-$* .
 
 run.cpu: container.cpu
-	podman run -p 3999:8000 -it --replace --name visse visse:cpu
+	podman run -p 3999:8000 -it --replace --name visse visse:$(VERSION)-cpu
 
 run.gpu: container.gpu
-	podman run -p 3999:8000 --device nvidia.com/gpu=all -it --replace --name visse visse:gpu
+	podman run -p 3999:8000 --device nvidia.com/gpu=all -it --replace --name visse visse:$(VERSION)-gpu
 
 
 .ONESHELL:
